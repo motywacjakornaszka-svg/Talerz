@@ -109,7 +109,8 @@
   .seg button{border:0;background:transparent;border-radius:10px;padding:9px;font-weight:700;cursor:pointer;color:var(--muted)}
   .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
   .keyrow{display:flex;gap:6px}
-  .keyrow input{flex:1;font-family:ui-monospace,monospace;font-size:13px}
+  .keyrow input{flex:1;font-size:14px}
+  .keyrow input[type=password],#gKeyNew,#cKeyNew{font-family:ui-monospace,monospace;font-size:13px}
   a{color:var(--accent)}
   .linkbtn{display:inline-flex;align-items:center;gap:6px;font-weight:700;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--bg)}
   ol.steps{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--muted)}
@@ -145,9 +146,14 @@
   .wbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
   .wbtn{border:1px solid var(--line);background:var(--w-soft);color:var(--w);border-radius:12px;padding:9px 4px;font-weight:800;cursor:pointer;text-align:center;line-height:1.15}
   .wbtn small{display:block;font-weight:600;font-size:11px;color:var(--muted)}
-  .wline{position:relative;height:46px;margin:16px 4px 4px}
+  .wline{position:relative;height:64px;margin:14px 4px 4px}
   .wline .axis{position:absolute;left:0;right:0;top:22px;height:4px;border-radius:2px;background:var(--line)}
-  .wline .done{position:absolute;left:0;top:22px;height:4px;border-radius:2px;background:var(--w);opacity:.35}
+  .wline .elapsed{position:absolute;left:0;top:22px;height:4px;border-radius:2px;background:var(--muted);opacity:.25}
+  .wline .drank{position:absolute;left:0;top:19px;height:10px;border-radius:5px;transition:width .6s ease,background-color .6s ease,box-shadow .6s ease}
+  .wline .drank-lab{position:absolute;top:0;font-size:11px;font-weight:800;white-space:nowrap;transform:translateX(-50%);transition:left .6s ease,color .6s ease}
+  .wline .lab{top:44px!important}
+  .wlegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:0 4px}
+  .wlegend i{display:inline-block;width:14px;height:6px;border-radius:3px;vertical-align:middle;margin-right:4px}
   .wline .plan{position:absolute;top:18px;width:2px;height:12px;background:var(--muted);opacity:.45;transform:translateX(-1px)}
   .wline .wdrop{position:absolute;top:13px;transform:translateX(-50%);border-radius:50%;background:var(--w);border:2px solid var(--card)}
   .wline .now{position:absolute;top:6px;width:2px;height:36px;background:var(--ink);transform:translateX(-1px)}
@@ -155,6 +161,16 @@
   .wtip{background:var(--w-soft);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:10px}
   .wtip.due{outline:2px solid var(--w);animation:pulse 1.6s ease-in-out infinite}
   @keyframes pulse{50%{outline-color:transparent}}
+  .keylist{display:grid;gap:6px}
+  .keyitem{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+  .keyitem .n{font-weight:800;color:var(--muted);text-align:center}
+  .keyitem .k{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+  .keyitem .nm{font-weight:700;font-size:14px}
+  .keyitem .acts{display:flex;gap:2px}
+  .keyitem .acts button{border:0;background:transparent;cursor:pointer;padding:6px;border-radius:8px;color:var(--muted);font-size:14px}
+  .keyitem .acts button:hover{background:var(--line)}
+  .kst{font-size:12px;font-weight:700}
+  .kst.ok{color:var(--accent)} .kst.limit,.kst.credit{color:var(--c)} .kst.invalid{color:var(--warn)}
   .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.on{opacity:1}
 </style>
@@ -217,6 +233,7 @@
         </div>
       </div>
       <div class="wline" id="wLine" aria-label="Oś dnia: planowane i wypite porcje"></div>
+      <div class="wlegend" id="wLegend"></div>
       <div class="wbtns">
         <button class="wbtn" data-ml="150">+150<small>filiżanka</small></button>
         <button class="wbtn" data-ml="250">+250<small>szklanka</small></button>
@@ -305,12 +322,15 @@
         <li>Kliknij <b>Create API key</b> (albo skopiuj klucz utworzony automatycznie).</li>
         <li>Wklej klucz (zaczyna się od <code>AIza</code>) poniżej.</li>
       </ol>
-      <div class="field" style="margin-top:12px"><label for="gKey">Klucz API Gemini</label>
-        <div class="keyrow"><input id="gKey" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…"><button class="btn ghost" data-eye="gKey" aria-label="Pokaż klucz">👁</button></div></div>
+      <div class="field" style="margin-top:12px"><label>Klucze API – używane po kolei, następny włącza się po wyczerpaniu limitu</label>
+        <div class="keylist" id="gKeys"></div>
+        <div class="keyrow" style="margin-top:6px"><input id="gKeyNew" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej klucz AIza…"><button class="btn ghost" data-eye="gKeyNew" aria-label="Pokaż klucz">👁</button></div>
+        <div class="keyrow" style="margin-top:6px"><input id="gKeyLabel" type="text" maxlength="24" placeholder="Nazwa (opcjonalnie), np. Prywatny"><button class="btn" id="gKeyAdd">＋ Dodaj klucz</button></div>
+      </div>
       <div class="field"><label for="gModel">Model</label>
         <div class="keyrow"><input id="gModel" type="text" list="gModels" spellcheck="false"><button class="btn ghost" id="gList">Pobierz listę</button></div>
         <datalist id="gModels"></datalist></div>
-      <div class="row"><button class="btn" id="gTest">Zapisz i przetestuj</button><span id="gStatus" class="small"></span></div>
+      <div class="row" style="flex-wrap:wrap"><button class="btn ghost" id="gTest">Testuj wszystkie klucze</button><span id="gStatus" class="small"></span></div>
       <div class="small muted" style="margin-top:8px">Dokumentacja modeli: <a href="https://ai.google.dev/gemini-api/docs/models" target="_blank" rel="noopener">ai.google.dev/gemini-api/docs/models</a></div>
     </div>
 
@@ -323,13 +343,23 @@
         <li>W <b>Settings → API keys</b> kliknij <b>Create key</b>. Ustaw limit wydatków, np. 5 $ miesięcznie.</li>
         <li>Wklej klucz (zaczyna się od <code>sk-ant-</code>) poniżej – jest pokazywany tylko raz.</li>
       </ol>
-      <div class="field" style="margin-top:12px"><label for="cKey">Klucz API Claude</label>
-        <div class="keyrow"><input id="cKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"><button class="btn ghost" data-eye="cKey" aria-label="Pokaż klucz">👁</button></div></div>
+      <div class="field" style="margin-top:12px"><label>Klucze API – używane po kolei, następny włącza się po wyczerpaniu limitu</label>
+        <div class="keylist" id="cKeys"></div>
+        <div class="keyrow" style="margin-top:6px"><input id="cKeyNew" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej klucz sk-ant-…"><button class="btn ghost" data-eye="cKeyNew" aria-label="Pokaż klucz">👁</button></div>
+        <div class="keyrow" style="margin-top:6px"><input id="cKeyLabel" type="text" maxlength="24" placeholder="Nazwa (opcjonalnie), np. Prywatny"><button class="btn" id="cKeyAdd">＋ Dodaj klucz</button></div>
+      </div>
       <div class="field"><label for="cModel">Model</label>
         <div class="keyrow"><input id="cModel" type="text" list="cModels" spellcheck="false"><button class="btn ghost" id="cList">Pobierz listę</button></div>
         <datalist id="cModels"><option value="claude-haiku-5-5">Haiku – najtańszy, szybki</option><option value="claude-sonnet-5-5">Sonnet – dokładniejszy</option></datalist></div>
-      <div class="row"><button class="btn" id="cTest">Zapisz i przetestuj</button><span id="cStatus" class="small"></span></div>
+      <div class="row" style="flex-wrap:wrap"><button class="btn ghost" id="cTest">Testuj wszystkie klucze</button><span id="cStatus" class="small"></span></div>
       <div class="small muted" style="margin-top:8px">Dokumentacja: <a href="https://platform.claude.com/docs/en/get-api-key" target="_blank" rel="noopener">platform.claude.com/docs</a></div>
+    </div>
+
+    <div class="card">
+      <h2>Gdy skończy się limit</h2>
+      <div class="small muted" style="margin-bottom:10px">Po błędzie limitu (np. dzienny limit darmowego klucza Gemini) albo braku środków aplikacja sama przechodzi do następnego klucza z listy. Klucz wraca do użycia po resecie limitu – dzienny limit Gemini odnawia się o północy czasu pacyficznego (ok. 9:00 w Polsce).</div>
+      <label class="check"><input type="checkbox" id="optFallback"><span><b>Przełącz na drugiego dostawcę</b><br><span class="small muted">Gdy wszystkie klucze Gemini się wyczerpią, użyj kluczy Claude (i odwrotnie).</span></span></label>
+      <div class="small muted">Uwaga: regulaminy dostawców mogą zabraniać obchodzenia limitów, np. przez zakładanie wielu darmowych projektów tylko w tym celu. Bezpiecznie jest łączyć np. darmowy klucz z płatnym albo klucze z różnych dostawców.</div>
     </div>
 
     <div class="card">
@@ -449,7 +479,7 @@
 
 <script>
 (() => {
-  const APP_VERSION = '4';
+  const APP_VERSION = '6';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -759,7 +789,7 @@
       $('preview').classList.remove('hidden'); $('dropTxt').classList.add('hidden');
       $('analyze').disabled = false; $('aiStatus').textContent = '';
       const c = aiCfg();
-      if (c.autoAnalyze && (c.provider === 'claude' ? c.claudeKey : c.geminiKey)) $('analyze').click();
+      if (c.autoAnalyze && hasAnyKey(c)) $('analyze').click();
     } catch { toast('Nie udało się wczytać zdjęcia'); }
   });
 
@@ -779,24 +809,26 @@ Jeśli na zdjęciu nie ma jedzenia, zwróć {"meal_name":"","items":[],"confiden
     if (!photoBlob) return;
     const st = $('aiStatus');
     const cfg = aiCfg();
-    const key = cfg.provider === 'claude' ? cfg.claudeKey : cfg.geminiKey;
-    if (!key) {
+    if (!hasAnyKey(cfg)) {
       st.innerHTML = 'Najpierw dodaj klucz API w zakładce <a href="#" id="goAi">AI</a>. Możesz też wpisać składniki ręcznie.';
       $('goAi').onclick = e => { e.preventDefault(); closeSheet(); showTab('ai'); };
       return;
     }
     $('analyze').disabled = true;
-    const who = cfg.provider === 'claude' ? 'Claude' : 'Gemini';
     const t0 = performance.now();
-    st.innerHTML = `<span class="spinner"></span>&nbsp; ${who} ogląda Twój talerz… <span id="tick">0,0 s</span>`;
+    let who = PROV[cfg.provider];
+    st.innerHTML = `<span class="spinner"></span>&nbsp; <span id="aiWho">${who}</span> ogląda Twój talerz… <span id="tick">0,0 s</span>`;
     const tick = setInterval(() => { const el = $('tick'); if (el) el.textContent = ((performance.now()-t0)/1000).toFixed(1).replace('.',',') + ' s'; }, 100);
     aiAbort = new AbortController();
     try {
-      const txt = await askVision(cfg, PROMPT($('hint').value.trim()), await photoB64, aiAbort.signal);
-      const data = parseJson(txt);
+      const r = await askWithRotation(PROMPT($('hint').value.trim()), await photoB64, aiAbort.signal, (prov, k, i, n) => {
+        who = PROV[prov]; const el = $('aiWho'); if (el) el.textContent = n > 1 ? `${who} (${keyName(k, i)})` : who;
+      });
+      const data = parseJson(r.text);
       const secs = ((performance.now()-t0)/1000).toFixed(1).replace('.',',');
       try { localStorage.setItem('talerz:last-ai-time', secs + ' s (' + who + ')'); } catch {}
-      st.innerHTML = `<span class="status-ok">✓ Gotowe w ${secs} s</span> · sprawdź gramatury i zapisz.`;
+      st.innerHTML = `<span class="status-ok">✓ Gotowe w ${secs} s</span> · sprawdź gramatury i zapisz.` +
+        (r.notes.length ? `<br><span class="small">🔁 ${esc(r.notes.join(' · '))} → użyto: ${esc(PROV[r.prov] + ' ' + keyName(r.key, r.idx))}</span>` : '');
       $('analyze').textContent = 'Przelicz ponownie (np. z podpowiedzią)';
       showResult(data);
     } catch (e) {
@@ -886,129 +918,268 @@ Jeśli na zdjęciu nie ma jedzenia, zwróć {"meal_name":"","items":[],"confiden
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('sheetBg').classList.contains('open')) closeSheet(); });
 
 
-  // ---------- AI: konfiguracja i wywołania ----------
+  // ---------- AI: konfiguracja, wiele kluczy, automatyczne przełączanie ----------
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const AI_DEFAULTS = { fast:true, autoAnalyze:true, provider:'gemini', geminiKey:'', geminiModel:'gemini-3.6-flash', claudeKey:'', claudeModel:'claude-haiku-5-5' };
-  function aiCfg(){ try { return Object.assign({}, AI_DEFAULTS, JSON.parse(localStorage.getItem('talerz:ai-config') || '{}')); } catch { return Object.assign({}, AI_DEFAULTS); } }
-  function setAiCfg(patch){ const c = Object.assign(aiCfg(), patch); try { localStorage.setItem('talerz:ai-config', JSON.stringify(c)); } catch {} return c; }
+  const PROV = { gemini:'Gemini', claude:'Claude' };
+  const AI_DEFAULTS = { fast:true, autoAnalyze:true, fallback:true, provider:'gemini', geminiModel:'gemini-3.6-flash', claudeModel:'claude-haiku-5-5', keys:{ gemini:[], claude:[] } };
+  const newId = () => Math.random().toString(36).slice(2, 9);
+  function aiCfg(){
+    let c;
+    try { c = Object.assign({}, AI_DEFAULTS, JSON.parse(localStorage.getItem('talerz:ai-config') || '{}')); } catch { c = Object.assign({}, AI_DEFAULTS); }
+    c.keys = Object.assign({ gemini:[], claude:[] }, c.keys || {});
+    const migrate = !!(c.geminiKey || c.claudeKey);
+    // migracja z wersji z jednym kluczem
+    if (c.geminiKey) { if (!c.keys.gemini.some(k => k.key === c.geminiKey)) c.keys.gemini.unshift({ id:newId(), key:c.geminiKey, label:'' }); delete c.geminiKey; }
+    if (c.claudeKey) { if (!c.keys.claude.some(k => k.key === c.claudeKey)) c.keys.claude.unshift({ id:newId(), key:c.claudeKey, label:'' }); delete c.claudeKey; }
+    if (migrate) saveAiCfg(c);
+    return c;
+  }
+  function saveAiCfg(c){ try { localStorage.setItem('talerz:ai-config', JSON.stringify(c)); } catch {} return c; }
+  function setAiCfg(patch){ return saveAiCfg(Object.assign(aiCfg(), patch)); }
+  function markKey(prov, id, patch){ const c = aiCfg(); const k = c.keys[prov].find(x => x.id === id); if (k) Object.assign(k, patch); saveAiCfg(c); }
+  const keyName = (k, i) => k.label ? `„${k.label}”` : `klucz ${i + 1}`;
+  const maskKey = k => k.length > 12 ? k.slice(0, 6) + '…' + k.slice(-4) : '••••';
+  const isUsable = k => k.state !== 'invalid' && !(k.until && k.until > Date.now());
+  const usableKeys = (c, prov) => c.keys[prov].map((k, i) => ({ k, i })).filter(x => isUsable(x.k));
+  const hasAnyKey = c => (c.keys[c.provider].length > 0) || (c.fallback && c.keys[c.provider === 'gemini' ? 'claude' : 'gemini'].length > 0);
+  const hhmm = ms => { const d = new Date(ms); return (d.toDateString() === new Date().toDateString() ? '' : 'jutro ') + `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+  // Dzienny limit Gemini odnawia się o północy czasu pacyficznego.
+  function msToPacificMidnight(){
+    try {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone:'America/Los_Angeles', hour:'numeric', minute:'numeric', second:'numeric', hourCycle:'h23' }).formatToParts(new Date()).map(p => [p.type, +p.value]));
+      return (86400 - (parts.hour * 3600 + parts.minute * 60 + parts.second)) * 1000 + 60000;
+    } catch { return 6 * 3600 * 1000; }
+  }
 
   function blobToBase64(blob){
     return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
   }
-  async function apiError(resp, who){
-    let msg = '';
-    try { const j = await resp.json(); msg = (j.error && (j.error.message || j.error.type)) || ''; } catch {}
-    if (resp.status === 401 || resp.status === 403) return new Error(`${who}: nieprawidłowy klucz API lub brak dostępu. ${msg}`);
-    if (resp.status === 404) return new Error(`${who}: nie znaleziono modelu – wybierz inny w zakładce AI („Pobierz listę”). ${msg}`);
-    if (resp.status === 429) return new Error(`${who}: przekroczony limit zapytań – spróbuj za chwilę. ${msg}`);
-    if (resp.status === 400 && /credit|balance/i.test(msg)) return new Error(`${who}: brak środków na koncie API. ${msg}`);
-    return new Error(`${who}: błąd ${resp.status}. ${msg}`);
+
+  // Błąd API z rodzajem: limit / credit / invalid / overload / model / other
+  class ApiErr extends Error { constructor(msg, kind, retryMs){ super(msg); this.kind = kind; this.retryMs = retryMs || 0; } }
+  async function classify(resp, who){
+    let msg = '', j = null;
+    try { j = await resp.json(); msg = (j.error && (j.error.message || j.error.type)) || ''; } catch {}
+    const st = resp.status;
+    if (st === 429 || (j && j.error && j.error.status === 'RESOURCE_EXHAUSTED')) {
+      let retry = 0;
+      const ra = +resp.headers.get('retry-after'); if (ra) retry = ra * 1000;
+      const ri = j && j.error && (j.error.details || []).find(d => /RetryInfo/.test(d['@type'] || ''));
+      if (ri && ri.retryDelay) retry = parseFloat(ri.retryDelay) * 1000;
+      const daily = /per.?day|PerDay|daily/i.test(JSON.stringify(j || {}));
+      if (daily) retry = who === 'Gemini' ? msToPacificMidnight() : 3600 * 1000;
+      return new ApiErr(`${who}: limit zapytań wyczerpany${daily ? ' (dzienny)' : ''}.`, 'limit', Math.max(retry, 30000));
+    }
+    if (st === 401 || st === 403 || /API key not valid|invalid.*api.?key/i.test(msg)) return new ApiErr(`${who}: nieprawidłowy klucz lub brak dostępu.`, 'invalid');
+    if (/credit|balance|billing/i.test(msg)) return new ApiErr(`${who}: brak środków na koncie API.`, 'credit', 3600 * 1000);
+    if (st === 404) return new ApiErr(`${who}: nie znaleziono modelu – wybierz inny w zakładce AI („Pobierz listę”). ${msg}`, 'model');
+    if (st === 529 || st === 503 || st === 500) return new ApiErr(`${who}: serwer przeciążony.`, 'overload');
+    return new ApiErr(`${who}: błąd ${st}. ${msg}`, 'other');
   }
 
-  async function askVision(cfg, prompt, b64, signal){
-    if (cfg.provider === 'claude') {
+  async function callProvider(prov, key, cfg, prompt, b64, signal){
+    if (prov === 'claude') {
       const content = [];
       if (b64) content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:b64 } });
       content.push({ type:'text', text:prompt });
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', signal,
-        headers:{ 'content-type':'application/json', 'x-api-key':cfg.claudeKey.trim(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-        body: JSON.stringify({ model:cfg.claudeModel.trim(), max_tokens: cfg.fast ? 900 : 1500, messages:[{ role:'user', content }] })
+        headers:{ 'content-type':'application/json', 'x-api-key':key.trim(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+        body: JSON.stringify({ model:(cfg.claudeModel || AI_DEFAULTS.claudeModel).trim(), max_tokens: cfg.fast ? 900 : 1500, messages:[{ role:'user', content }] })
       });
-      if (!resp.ok) throw await apiError(resp, 'Claude');
+      if (!resp.ok) throw await classify(resp, 'Claude');
       const j = await resp.json();
       return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
-    } else {
-      const parts = [];
-      if (b64) parts.push({ inline_data:{ mime_type:'image/jpeg', data:b64 } });
-      parts.push({ text:prompt });
-      const model = cfg.geminiModel.trim().replace(/^models\//,'');
-      const call = (thinking) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method:'POST', signal,
-        headers:{ 'content-type':'application/json', 'x-goog-api-key':cfg.geminiKey.trim() },
-        body: JSON.stringify({ contents:[{ role:'user', parts }], generationConfig: Object.assign(
-          { temperature:0.2, responseMimeType:'application/json' },
-          thinking ? { thinkingConfig:{ thinkingLevel:'low' } } : {}) })
-      });
-      // Tryb szybki: ogranicz „myślenie” modelu. Starsze modele nie znają tego parametru – wtedy ponów bez niego.
-      let resp = await call(!!cfg.fast);
-      if (!resp.ok && cfg.fast && resp.status === 400) {
-        const t = await resp.clone().text();
-        if (/thinking/i.test(t)) resp = await call(false);
-      }
-      if (!resp.ok) throw await apiError(resp, 'Gemini');
-      const j = await resp.json();
-      const c = j.candidates && j.candidates[0];
-      if (!c || !c.content) throw new Error('Gemini: pusta odpowiedź' + (j.promptFeedback && j.promptFeedback.blockReason ? ' (zablokowano: ' + j.promptFeedback.blockReason + ')' : '') + '.');
-      return (c.content.parts || []).map(p => p.text || '').join('');
     }
+    const parts = [];
+    if (b64) parts.push({ inline_data:{ mime_type:'image/jpeg', data:b64 } });
+    parts.push({ text:prompt });
+    const model = (cfg.geminiModel || AI_DEFAULTS.geminiModel).trim().replace(/^models\//,'');
+    const call = (thinking) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method:'POST', signal,
+      headers:{ 'content-type':'application/json', 'x-goog-api-key':key.trim() },
+      body: JSON.stringify({ contents:[{ role:'user', parts }], generationConfig: Object.assign(
+        { temperature:0.2, responseMimeType:'application/json' },
+        thinking ? { thinkingConfig:{ thinkingLevel:'low' } } : {}) })
+    });
+    // Tryb szybki: ogranicz „myślenie” modelu. Starsze modele nie znają tego parametru – wtedy ponów bez niego.
+    let resp = await call(!!cfg.fast);
+    if (!resp.ok && cfg.fast && resp.status === 400) {
+      const t = await resp.clone().text();
+      if (/thinking/i.test(t)) resp = await call(false);
+    }
+    if (!resp.ok) throw await classify(resp, 'Gemini');
+    const j = await resp.json();
+    const c = j.candidates && j.candidates[0];
+    if (!c || !c.content) throw new ApiErr('Gemini: pusta odpowiedź' + (j.promptFeedback && j.promptFeedback.blockReason ? ' (zablokowano: ' + j.promptFeedback.blockReason + ')' : '') + '.', 'other');
+    return (c.content.parts || []).map(p => p.text || '').join('');
+  }
+
+  // Próbuje kolejnych kluczy (i ewentualnie drugiego dostawcy), aż któryś zadziała.
+  async function askWithRotation(prompt, b64, signal, onTry){
+    const cfg = aiCfg();
+    const order = [cfg.provider].concat(cfg.fallback ? [cfg.provider === 'gemini' ? 'claude' : 'gemini'] : []);
+    const notes = []; let nextFree = Infinity, lastErr = null, tried = 0;
+    for (const prov of order) {
+      const list = aiCfg().keys[prov];
+      for (let i = 0; i < list.length; i++) {
+        const k = list[i];
+        if (!isUsable(k)) { if (k.until) nextFree = Math.min(nextFree, k.until); continue; }
+        tried++;
+        if (onTry) onTry(prov, k, i, list.length);
+        try {
+          const text = await callProvider(prov, k.key, cfg, prompt, b64, signal);
+          const today = todayKey();
+          markKey(prov, k.id, { state:'ok', until:0, note:'', usedDay:today, used:(k.usedDay === today ? (k.used || 0) : 0) + 1, lastOk:Date.now() });
+          return { text, prov, key:k, idx:i, notes };
+        } catch (e) {
+          if (e && e.name === 'AbortError') throw e;
+          lastErr = e;
+          const kind = e.kind || 'other';
+          if (kind === 'limit' || kind === 'credit') {
+            const until = Date.now() + e.retryMs; nextFree = Math.min(nextFree, until);
+            markKey(prov, k.id, { state:kind, until, note:e.message });
+            notes.push(`${PROV[prov]} ${keyName(k, i)}: ${kind === 'limit' ? 'limit' : 'brak środków'}`);
+          } else if (kind === 'invalid') {
+            markKey(prov, k.id, { state:'invalid', until:0, note:e.message });
+            notes.push(`${PROV[prov]} ${keyName(k, i)}: nieprawidłowy`);
+          } else if (kind === 'overload') {
+            notes.push(`${PROV[prov]}: przeciążony`);
+            break; // ten sam serwer – spróbuj drugiego dostawcy
+          } else throw e;  // błąd modelu lub inny – zmiana klucza nie pomoże
+        }
+      }
+    }
+    if (!tried && nextFree === Infinity) throw new Error('Brak działających kluczy API – dodaj lub przetestuj klucze w zakładce AI.');
+    throw new Error((lastErr && lastErr.kind === 'overload' ? 'Serwery AI są przeciążone – spróbuj za chwilę.' : 'Wszystkie klucze API wyczerpały limit.') + (nextFree < Infinity ? ` Najbliższy klucz będzie dostępny ok. ${hhmm(nextFree)}.` : '') + ' Dodaj kolejny klucz w zakładce AI albo wpisz składniki ręcznie.');
   }
 
   async function listModels(provider, key){
     if (provider === 'claude') {
       const resp = await fetch('https://api.anthropic.com/v1/models?limit=100', { headers:{ 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' } });
-      if (!resp.ok) throw await apiError(resp, 'Claude');
+      if (!resp.ok) throw await classify(resp, 'Claude');
       const j = await resp.json();
       return (j.data || []).map(m => ({ id:m.id, label:m.display_name || m.id }));
     }
     const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers:{ 'x-goog-api-key':key } });
-    if (!resp.ok) throw await apiError(resp, 'Gemini');
+    if (!resp.ok) throw await classify(resp, 'Gemini');
     const j = await resp.json();
     return (j.models || [])
       .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/.test(m.name) && !/(tts|image|audio|live|embedding|transcribe|translate|robotics)/i.test(m.name))
       .map(m => ({ id:m.name.replace(/^models\//,''), label:m.displayName || m.name }));
   }
 
-  function fillAi(){
+  // ---- UI zakładki AI ----
+  const PX = { gemini:'g', claude:'c' };
+  function keyStatus(k){
+    const today = todayKey();
+    const used = k.usedDay === today && k.used ? ` · dziś ${k.used}×` : '';
+    if (k.state === 'invalid') return `<span class="kst invalid">✗ nieprawidłowy – przetestuj lub usuń</span>`;
+    if (k.until && k.until > Date.now()) return `<span class="kst ${k.state}">⏸ ${k.state === 'credit' ? 'brak środków' : 'limit'} – wraca ok. ${hhmm(k.until)}</span>${used}`;
+    if (k.lastOk || k.state === 'ok') return `<span class="kst ok">● działa</span>${used}`;
+    return `<span class="kst">○ nieprzetestowany</span>`;
+  }
+  function renderKeys(prov){
+    const c = aiCfg(), box = $(PX[prov] + 'Keys'), list = c.keys[prov];
+    box.innerHTML = list.length ? '' : '<div class="small muted">Brak kluczy. Dodaj pierwszy poniżej.</div>';
+    list.forEach((k, i) => {
+      const el = document.createElement('div'); el.className = 'keyitem';
+      el.innerHTML = `<div class="n">${i + 1}</div>
+        <div><div class="nm">${esc(k.label || 'Klucz ' + (i + 1))} <span class="k">${esc(maskKey(k.key))}</span></div><div class="small muted">${keyStatus(k)}</div></div>
+        <div class="acts">${i > 0 ? '<button data-a="up" title="Wyżej (używaj wcześniej)">▲</button>' : ''}<button data-a="test" title="Testuj">⟳</button><button data-a="del" title="Usuń">🗑</button></div>`;
+      el.querySelector('[data-a="test"]').onclick = () => testKeys(prov, [k.id]);
+      const up = el.querySelector('[data-a="up"]');
+      if (up) up.onclick = () => { const c2 = aiCfg(); const arr = c2.keys[prov]; const j = arr.findIndex(x => x.id === k.id); [arr[j-1], arr[j]] = [arr[j], arr[j-1]]; saveAiCfg(c2); renderKeys(prov); setProvUi(c2.provider); };
+      const del = el.querySelector('[data-a="del"]');
+      del.onclick = () => {
+        if (!del.dataset.armed) { del.dataset.armed = 1; del.textContent = 'Usuń?'; del.style.color = 'var(--warn)'; setTimeout(() => { delete del.dataset.armed; del.textContent = '🗑'; del.style.color = ''; }, 2500); return; }
+        const c2 = aiCfg(); c2.keys[prov] = c2.keys[prov].filter(x => x.id !== k.id); saveAiCfg(c2); renderKeys(prov); setProvUi(c2.provider); toast('Usunięto klucz');
+      };
+      box.appendChild(el);
+    });
+  }
+  async function testKeys(prov, ids){
+    const st = $(PX[prov] + 'Status'); const c = aiCfg();
+    const list = c.keys[prov].filter(k => !ids || ids.includes(k.id));
+    if (!list.length) { st.innerHTML = '<span class="status-err">Najpierw dodaj klucz.</span>'; return; }
+    st.innerHTML = '<span class="spinner"></span>&nbsp; Testuję…';
+    let okN = 0;
+    for (const k of list) {
+      try {
+        parseJson(await callProvider(prov, k.key, c, 'Odpowiedz wyłącznie JSON-em: {"ok":true}', null));
+        markKey(prov, k.id, { state:'ok', until:0, note:'', lastOk:Date.now() }); okN++;
+      } catch (e) {
+        const kind = e.kind || 'other';
+        markKey(prov, k.id, kind === 'limit' || kind === 'credit' ? { state:kind, until:Date.now() + e.retryMs, note:e.message } : kind === 'invalid' ? { state:'invalid', until:0, note:e.message } : { note:e.message });
+        if (list.length === 1) st.innerHTML = '<span class="status-err">' + esc(e.message) + '</span>';
+      }
+      renderKeys(prov);
+    }
+    if (list.length > 1 || okN) st.innerHTML = okN === list.length ? `<span class="status-ok">✓ Działa ${okN} z ${list.length}</span>` : `<span class="status-err">Działa ${okN} z ${list.length} – szczegóły przy kluczach.</span>`;
+    setProvUi(aiCfg().provider);
+  }
+  function addKey(prov){
+    const inp = $(PX[prov] + 'KeyNew'), lab = $(PX[prov] + 'KeyLabel');
+    const key = inp.value.trim().replace(/\s+/g, '');
+    if (!key) { toast('Wklej klucz API'); return; }
+    if (prov === 'gemini' && !/^AIza/.test(key) && !confirmOdd(inp)) return;
+    if (prov === 'claude' && !/^sk-ant-/.test(key) && !confirmOdd(inp)) return;
     const c = aiCfg();
-    $('gKey').value = c.geminiKey; $('gModel').value = c.geminiModel;
-    $('cKey').value = c.claudeKey; $('cModel').value = c.claudeModel;
-    $('optFast').checked = !!c.fast; $('optAuto').checked = !!c.autoAnalyze;
+    if (c.keys[prov].some(k => k.key === key)) { toast('Ten klucz już jest na liście'); return; }
+    const k = { id:newId(), key, label:lab.value.trim() };
+    c.keys[prov].push(k);
+    if (!c.keys[c.provider].length) c.provider = prov;
+    saveAiCfg(c); inp.value = ''; lab.value = ''; inp.type = 'password';
+    renderKeys(prov); setProvUi(c.provider);
+    testKeys(prov, [k.id]);
+  }
+  function confirmOdd(inp){
+    if (inp.dataset.warned === inp.value) return true;
+    inp.dataset.warned = inp.value; toast('Ten klucz wygląda nietypowo – kliknij „Dodaj” jeszcze raz, żeby potwierdzić'); return false;
+  }
+
+  function fillAi(){
+    const c = aiCfg(); saveAiCfg(c);   // zapis po ewentualnej migracji
+    $('gModel').value = c.geminiModel; $('cModel').value = c.claudeModel;
+    $('optFast').checked = !!c.fast; $('optAuto').checked = !!c.autoAnalyze; $('optFallback').checked = !!c.fallback;
     try { $('lastTime').textContent = localStorage.getItem('talerz:last-ai-time') || '–'; } catch {}
+    renderKeys('gemini'); renderKeys('claude');
     setProvUi(c.provider);
   }
   function setProvUi(p){
-    document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.prov === p));
+    document.querySelectorAll('.seg button[data-prov]').forEach(b => b.classList.toggle('on', b.dataset.prov === p));
     $('cfg-gemini').classList.toggle('hidden', p !== 'gemini');
     $('cfg-claude').classList.toggle('hidden', p !== 'claude');
-    const c = aiCfg();
-    const has = p === 'claude' ? c.claudeKey : c.geminiKey;
-    $('aiActive').innerHTML = has ? `Aktywny: <b>${p === 'claude' ? 'Claude' : 'Gemini'}</b> · model <code>${esc(p === 'claude' ? c.claudeModel : c.geminiModel)}</code>` : 'Wklej klucz API poniżej, żeby włączyć liczenie kalorii ze zdjęć.';
+    const c = aiCfg(); const n = c.keys[p].length, u = usableKeys(c, p).length;
+    const other = p === 'gemini' ? 'claude' : 'gemini', on = c.keys[other].length;
+    $('aiActive').innerHTML = n
+      ? `Główny: <b>${PROV[p]}</b> · ${n} ${n === 1 ? 'klucz' : (n < 5 ? 'klucze' : 'kluczy')} (dostępne teraz: ${u}) · model <code>${esc(p === 'claude' ? c.claudeModel : c.geminiModel)}</code>` + (c.fallback && on ? `<br>Zapasowy: ${PROV[other]} · ${on} ${on === 1 ? 'klucz' : 'klucze'}` : '')
+      : 'Dodaj klucz API poniżej, żeby włączyć liczenie kalorii ze zdjęć.';
   }
-  document.querySelectorAll('.seg button').forEach(b => b.onclick = () => { setAiCfg({ provider:b.dataset.prov }); setProvUi(b.dataset.prov); });
+  document.querySelectorAll('.seg button[data-prov]').forEach(b => b.onclick = () => { setAiCfg({ provider:b.dataset.prov }); setProvUi(b.dataset.prov); });
   document.querySelectorAll('[data-eye]').forEach(b => b.onclick = () => { const i = $(b.dataset.eye); i.type = i.type === 'password' ? 'text' : 'password'; });
-
-  function wireProvider(p, keyId, modelId, listId, dlId, testId, statusId){
-    const saveFields = () => setAiCfg(p === 'claude'
-      ? { claudeKey:$(keyId).value.trim(), claudeModel:$(modelId).value.trim() || AI_DEFAULTS.claudeModel }
-      : { geminiKey:$(keyId).value.trim(), geminiModel:$(modelId).value.trim() || AI_DEFAULTS.geminiModel });
-    $(listId).onclick = async () => {
-      const key = $(keyId).value.trim(); const st = $(statusId);
-      if (!key) { st.innerHTML = '<span class="status-err">Najpierw wklej klucz.</span>'; return; }
+  ['gemini','claude'].forEach(prov => {
+    const px = PX[prov];
+    $(px + 'KeyAdd').onclick = () => addKey(prov);
+    $(px + 'KeyNew').addEventListener('keydown', e => { if (e.key === 'Enter') addKey(prov); });
+    $(px + 'Test').onclick = () => testKeys(prov, null);
+    $(px + 'Model').addEventListener('change', () => { setAiCfg(prov === 'claude' ? { claudeModel:$('cModel').value.trim() || AI_DEFAULTS.claudeModel } : { geminiModel:$('gModel').value.trim() || AI_DEFAULTS.geminiModel }); setProvUi(aiCfg().provider); });
+    $(px + 'List').onclick = async () => {
+      const st = $(px + 'Status'); const c = aiCfg(); const k = (usableKeys(c, prov)[0] || {}).k || c.keys[prov][0];
+      if (!k) { st.innerHTML = '<span class="status-err">Najpierw dodaj klucz.</span>'; return; }
       st.innerHTML = '<span class="spinner"></span>';
       try {
-        const ms = await listModels(p, key);
-        $(dlId).innerHTML = ms.map(m => `<option value="${esc(m.id)}">${esc(m.label)}</option>`).join('');
+        const ms = await listModels(prov, k.key);
+        $(px + 'Models').innerHTML = ms.map(m => `<option value="${esc(m.id)}">${esc(m.label)}</option>`).join('');
         st.innerHTML = `<span class="status-ok">Znaleziono ${ms.length} modeli – kliknij pole „Model”, żeby wybrać.</span>`;
       } catch (e) { st.innerHTML = '<span class="status-err">' + esc(e.message) + '</span>'; }
     };
-    $(testId).onclick = async () => {
-      const c = saveFields(); setAiCfg({ provider:p }); setProvUi(p);
-      const st = $(statusId);
-      if (!(p === 'claude' ? c.claudeKey : c.geminiKey)) { st.innerHTML = '<span class="status-err">Wklej klucz API.</span>'; return; }
-      st.innerHTML = '<span class="spinner"></span>&nbsp; Testuję…';
-      try {
-        const txt = await askVision(Object.assign({}, c, { provider:p }), 'Odpowiedz wyłącznie JSON-em: {"ok":true}', null);
-        parseJson(txt);
-        st.innerHTML = '<span class="status-ok">✓ Połączono – zapisano jako aktywnego dostawcę.</span>';
-      } catch (e) { st.innerHTML = '<span class="status-err">' + esc(e.message) + '</span>'; }
-    };
-  }
-  wireProvider('gemini','gKey','gModel','gList','gModels','gTest','gStatus');
-  wireProvider('claude','cKey','cModel','cList','cModels','cTest','cStatus');
+  });
   $('optFast').onchange = e => setAiCfg({ fast:e.target.checked });
   $('optAuto').onchange = e => setAiCfg({ autoAnalyze:e.target.checked });
-  $('clearKeys').onclick = () => { setAiCfg({ geminiKey:'', claudeKey:'' }); fillAi(); toast('Usunięto klucze z tego urządzenia'); };
+  $('optFallback').onchange = e => { setAiCfg({ fallback:e.target.checked }); setProvUi(aiCfg().provider); };
+  $('clearKeys').onclick = () => { setAiCfg({ keys:{ gemini:[], claude:[] } }); fillAi(); toast('Usunięto klucze z tego urządzenia'); };
 
   // ---------- kopia zapasowa ----------
   $('exportBtn').onclick = async () => {
@@ -1072,10 +1243,16 @@ Jeśli na zdjęciu nie ma jedzenia, zwróć {"meal_name":"","items":[],"confiden
     const times = Array.from({ length: n }, (_, i) => wake + i * step);
     return { wake, end, n, portion, step, times };
   }
+  // Ile powinno być wypite do teraz: cel rozłożony równomiernie od pobudki do ostatniej porcji.
   function expectedNow(goal, plan){
     const t = nowMin(); const now = t < plan.wake - 60 ? t + 24 * 60 : t;
-    const done = plan.times.filter(x => x <= now).length;
-    return Math.min(goal, done * plan.portion);
+    const frac = Math.max(0, Math.min(1, (now - plan.wake) / Math.max(1, plan.end - plan.wake)));
+    return Math.round(goal * frac);
+  }
+  // Kolor paska: czerwony (≤50% planu) → pomarańczowy → zielony (≥100% planu na tę godzinę).
+  function paceColor(ratio){
+    const t = Math.max(0, Math.min(1, (ratio - 0.5) / 0.5));
+    return `hsl(${Math.round(t * 125)}, 68%, ${44 + Math.round((1 - Math.abs(t - 0.5) * 2) * 4)}%)`;
   }
   function waterBehind(){
     if (!day || dayKey !== todayKey() || !profile) return 0;
@@ -1109,12 +1286,21 @@ Jeśli na zdjęciu nie ma jedzenia, zwróć {"meal_name":"","items":[],"confiden
     const x = m => Math.max(0, Math.min(100, (m - plan.wake) / span * 100));
     const nm = nowMin();
     let html = '<div class="axis"></div>';
-    if (isToday) html += `<div class="done" style="width:${x(nm)}%"></div>`;
+    // pasek wypitych płynów na tej samej skali co czas: koniec paska = „do tej godziny wypiłem tyle, ile plan przewiduje”
+    const expected = isToday ? expectedNow(g, plan) : g;
+    const ratio = expected > 0 ? d / expected : (d > 0 ? 1 : 0);
+    const drankEnd = plan.wake + Math.min(1, d / g) * (plan.end - plan.wake);
+    const col = (isToday && nm < plan.wake) ? 'var(--w)' : paceColor(ratio);
+    const pctPlan = expected > 0 ? Math.round(ratio * 100) : null;
+    if (isToday) html += `<div class="elapsed" style="width:${x(nm)}%"></div>`;
+    html += `<div class="drank" style="width:${d > 0 ? Math.max(1.5, x(drankEnd)) : 0}%;background:${col};box-shadow:${ratio >= 1 ? '0 0 10px ' + col : 'none'}" title="Wypite: ${fmt(d)} ml"></div>`;
+    if (d > 0 || (isToday && expected > 0)) html += `<div class="drank-lab" style="left:${Math.min(88, Math.max(10, x(drankEnd)))}%;color:${col}">${fmt(d)} ml${pctPlan != null ? ' · ' + Math.min(999, pctPlan) + '%' : ''}</div>`;
     plan.times.forEach(t => html += `<div class="plan" style="left:${x(t)}%" title="plan ${fromMin(t)}"></div>`);
     day.drinks.forEach(dr => { const sz = 8 + Math.min(10, (+dr.ml || 0) / 60); html += `<div class="wdrop" style="left:${x(toMin(dr.t))}%;width:${sz}px;height:${sz}px;top:${24 - sz / 2}px" title="${dr.t} · ${dr.ml} ml"></div>`; });
     if (isToday && nm >= plan.wake && nm <= plan.end + 60) html += `<div class="now" style="left:${x(nm)}%"></div>`;
     [plan.wake, plan.wake + span / 2, plan.end + 60].forEach(t => html += `<div class="lab" style="left:${x(t)}%">${fromMin(t)}</div>`);
     $('wLine').innerHTML = html;
+    $('wLegend').innerHTML = `<span><i style="background:${col}"></i>wypite (${pctPlan != null ? (isToday ? Math.min(999, pctPlan) + '% planu na tę godzinę' : Math.min(999, pctPlan) + '% celu') : 'plan jeszcze nie ruszył'})</span>` + (isToday ? '<span><i style="background:var(--ink);width:2px;height:10px"></i>teraz – tu powinien sięgać pasek</span>' : '');
 
     // regularność + zachęta
     const upto = isToday ? nm : plan.end;

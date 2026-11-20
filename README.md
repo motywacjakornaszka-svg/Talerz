@@ -86,7 +86,20 @@ Aplikacja uruchamia się wtedy jak zwykła apka: na pełnym ekranie, z ikoną i 
 | **Google Gemini** | https://aistudio.google.com/apikey | darmowy limit na wybranych modelach |
 | **Claude (Anthropic)** | https://platform.claude.com/settings/keys | płatne za użycie (kredyty w Claude Console); subskrypcja claude.ai nie obejmuje API |
 
-W zakładce AI wklej klucz, kliknij **Pobierz listę**, wybierz model i kliknij **Zapisz i przetestuj**.
+W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go przetestuje. Potem kliknij **Pobierz listę** i wybierz model.
+
+### Kilka kluczy i automatyczne przełączanie
+
+- Dla każdego dostawcy możesz dodać **dowolnie wiele kluczy**, z nazwą, np. „Prywatny” albo „Płatny”. Kolejność zmienisz strzałką ▲.
+- Klucze są używane **po kolei**. Gdy klucz zwróci błąd limitu (429) albo braku środków, aplikacja od razu ponawia analizę **następnym kluczem**. Wyczerpany klucz odpoczywa:
+  - przy limicie minutowym: tyle, ile każe serwer (zwykle kilkadziesiąt sekund);
+  - przy dziennym limicie Gemini: do północy czasu pacyficznego, czyli ok. 9:00 w Polsce;
+  - przy braku środków w Claude: 1 godzinę.
+- Nieprawidłowy klucz jest pomijany, dopóki go nie przetestujesz (⟳) albo nie usuniesz.
+- Opcja **„Przełącz na drugiego dostawcę”**: gdy wyczerpią się wszystkie klucze Gemini, aplikacja użyje kluczy Claude (i odwrotnie).
+- Przy każdym kluczu widać jego stan (● działa / ⏸ limit do godz. … / ✗ nieprawidłowy) i liczbę dzisiejszych użyć.
+
+> Regulaminy dostawców mogą zabraniać obchodzenia limitów, np. przez zakładanie wielu darmowych projektów tylko w tym celu. Bezpiecznie jest łączyć np. darmowy klucz z płatnym albo klucze różnych dostawców.
 
 > ⚠️ **Nigdy nie wpisuj klucza do kodu ani nie commituj go do repozytorium.** Aplikacja wywołuje API bezpośrednio z telefonu, więc klucz jest bezpieczny tylko na Twoim urządzeniu. Dla Claude ustaw w Console miesięczny limit wydatków.
 
@@ -106,6 +119,7 @@ W zakładce AI wklej klucz, kliknij **Pobierz listę**, wybierz model i kliknij 
   - szybkie przyciski +150 / +250 / +330 / +500 ml, własna ilość i „cofnij”;
   - dzienny cel: ok. 30 ml na kg masy ciała + dodatek za kroki, w zakresie 1,5–3,5 l (można ustawić ręcznie w Profilu);
   - plan równych porcji od pobudki do godziny przed snem, pokazany na osi dnia razem z wypitymi napojami;
+  - **pasek tempa** na osi dnia: długość pokazuje, ile już wypiłeś, na tej samej skali co godziny. Gdy sięga kreski „teraz”, pijesz zgodnie z planem. Kolor zmienia się płynnie z czerwonego (≤50% planu na daną godzinę) przez pomarańczowy do zielonego (≥100%, z poświatą);
   - wskaźnik regularności i zachęta, gdy minie pora porcji albo pojawi się zaległość;
   - wykres z 14 dni w Historii, odznaki „Cel płynów” i „7 dni nawodnienia”.
   Przypomnienia: powiadomienia, gdy aplikacja działa, albo plik `.ics` do kalendarza. Kalendarz przypomina także przy zamkniętej aplikacji.
