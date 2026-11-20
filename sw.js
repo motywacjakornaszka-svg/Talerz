@@ -1,21 +1,24 @@
 // Service worker Talerza: działa offline, nie dotyka zapytań do API AI.
 // Po każdej zmianie plików aplikacji podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'talerz-v9';
+const VERSION = 'talerz-v10';
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png',
-  './icons/favicon.svg',
-  './screenshots/dzis.png',
-  './screenshots/plyny.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon.png',
+  './favicon.svg',
+  './screenshot-dzis.png',
+  './screenshot-plyny.png'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
+  // Każdy plik osobno – brak jednego pliku nie blokuje działania aplikacji.
+  e.waitUntil(caches.open(VERSION)
+    .then(c => Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {}))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {

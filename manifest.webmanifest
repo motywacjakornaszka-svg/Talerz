@@ -15,16 +15,16 @@
   "categories": ["health", "fitness", "food", "lifestyle"],
   "prefer_related_applications": false,
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "screenshots": [
-    { "src": "screenshots/dzis.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Dzienny limit kalorii, makro i płyny" },
-    { "src": "screenshots/plyny.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Pasek tempa picia i seria dni w limicie" }
+    { "src": "screenshot-dzis.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Dzienny limit kalorii, makro i płyny" },
+    { "src": "screenshot-plyny.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Pasek tempa picia i seria dni w limicie" }
   ],
   "shortcuts": [
-    { "name": "Dodaj posiłek", "short_name": "Posiłek", "url": "./?akcja=posilek", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Dodaj wodę", "short_name": "Woda", "url": "./?akcja=woda", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Dodaj posiłek", "short_name": "Posiłek", "url": "./?akcja=posilek", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Dodaj wodę", "short_name": "Woda", "url": "./?akcja=woda", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }

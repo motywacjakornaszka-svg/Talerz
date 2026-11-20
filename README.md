@@ -32,13 +32,14 @@ Zabezpieczenia:
 ## Struktura repozytorium
 
 ```
-index.html              ← cała aplikacja (HTML + CSS + JS, bez zależności)
+index.html              ← cała aplikacja
 manifest.webmanifest    ← dane do instalacji na telefonie
-sw.js                   ← service worker (działanie offline)
-icons/                  ← ikony aplikacji
-README.md
-.gitignore
+sw.js                   ← działanie offline
+icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png, favicon.svg  ← ikony
+screenshot-dzis.png, screenshot-plyny.png                                            ← zrzuty do okna instalacji
+README.md, .gitignore, .nojekyll
 ```
+Wszystkie pliki leżą w jednym folderze, bez podfolderów. **Bez plików ikon Chrome nie pozwoli zainstalować aplikacji.**
 
 Nie trzeba niczego budować ani instalować (bez npm i bez frameworków).
 
@@ -48,7 +49,7 @@ Nie trzeba niczego budować ani instalować (bez npm i bez frameworków).
 
 **Przez przeglądarkę (najprościej):**
 1. Na github.com kliknij **New repository**. Nazwa np. `talerz`, widoczność **Public**, bez README.
-2. Kliknij **uploading an existing file** i przeciągnij **wszystkie pliki razem z folderem `icons`**.
+2. Kliknij **uploading an existing file** i przeciągnij **wszystkie pliki z paczki**, także pliki `.png` i `.svg`.
 3. Kliknij **Commit changes**.
 
 **Albo z terminala:**

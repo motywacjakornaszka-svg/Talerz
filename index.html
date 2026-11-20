@@ -7,8 +7,8 @@
 <meta name="description" content="Licznik kalorii ze zdjęć posiłków i dzienny limit na odchudzanie liczony z kroków.">
 <meta name="theme-color" content="#2F7D5B">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Talerz">
@@ -620,7 +620,7 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const APP_VERSION = '9';
+  const APP_VERSION = '10';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -1397,7 +1397,7 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
     if (lastDrink >= due - plan.step / 2 || lastNotified === today + due) return;
     lastNotified = today + due;
     const body = `Wypij ok. ${plan.portion} ml. Dziś: ${fmt(drunk(rec))} z ${fmt(g)} ml.`;
-    try { const reg = await navigator.serviceWorker?.getRegistration(); if (reg) reg.showNotification('💧 Pora na wodę', { body, icon:'icons/icon-192.png', badge:'icons/icon-192.png', tag:'talerz-woda' }); else new Notification('💧 Pora na wodę', { body }); } catch {}
+    try { const reg = await navigator.serviceWorker?.getRegistration(); if (reg) reg.showNotification('💧 Pora na wodę', { body, icon:'icon-192.png', badge:'icon-192.png', tag:'talerz-woda' }); else new Notification('💧 Pora na wodę', { body }); } catch {}
   }
   setInterval(waterReminderTick, 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && day && dayKey === todayKey()) renderWater(); });
