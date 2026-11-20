@@ -92,7 +92,7 @@ Aplikacja uruchamia się wtedy jak zwykła apka: na pełnym ekranie, z ikoną i 
 
 | Dostawca | Gdzie wziąć klucz | Koszt |
 |---|---|---|
-| **Google Gemini** | https://aistudio.google.com/apikey | darmowy limit na wybranych modelach |
+| **Google Gemini** | https://aistudio.google.com/api-keys | darmowy limit na wybranych modelach |
 | **Claude (Anthropic)** | https://platform.claude.com/settings/keys | płatne za użycie (kredyty w Claude Console); subskrypcja claude.ai nie obejmuje API |
 
 W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go przetestuje. Potem kliknij **Pobierz listę** i wybierz model.
