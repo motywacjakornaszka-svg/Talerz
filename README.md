@@ -125,6 +125,15 @@ W zakładce AI wklej klucz, kliknij **Pobierz listę**, wybierz model i kliknij 
 
 ## Aktualizacja aplikacji
 
+Wersję aplikacji widać na dole zakładki **Profil** („Talerz, wersja …”).
+
+**Nie widać zmian po wgraniu nowej wersji?**
+1. Sprawdź na github.com, czy `index.html` jest w **głównym folderze** repozytorium, a nie w podfolderze `talerz/`, i czy pliki zostały podmienione (data ostatniego commita).
+2. W **Settings → Pages** poczekaj, aż wdrożenie będzie zielone (1–2 min, zakładka **Actions**).
+3. Zamknij aplikację całkowicie i otwórz ją ponownie, **dwa razy**. Od wersji 4 kolejne aktualizacje pokazują się już przy pierwszym otwarciu.
+4. Jeśli nadal widać starą wersję: Android/Chrome → ⋮ → Ustawienia → Ustawienia witryn → wyczyść dane strony. iPhone → Ustawienia → Safari → Zaawansowane → Dane witryn → usuń dane strony. Wcześniej zrób **eksport kopii**, bo usunięcie danych strony kasuje zapisane posiłki.
+
+
 Po zmianie plików podbij `VERSION` w `sw.js` (np. z `talerz-v3` na `talerz-v4`). Dzięki temu telefony pobiorą nową wersję. Zwykle wystarczy potem zamknąć i ponownie otworzyć aplikację.
 
 ## Kopia zapasowa

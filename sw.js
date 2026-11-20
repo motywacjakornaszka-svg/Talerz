@@ -1,6 +1,6 @@
 // Service worker Talerza: działa offline, nie dotyka zapytań do API AI.
 // Po każdej zmianie plików aplikacji podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'talerz-v3';
+const VERSION = 'talerz-v4';
 const SHELL = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -38,9 +38,10 @@ self.addEventListener('fetch', e => {
   }
   if (url.origin !== self.location.origin) return; // API Gemini/Claude – zawsze bezpośrednio do sieci
   // Pliki aplikacji: najpierw sieć (świeża wersja), offline – z cache.
+  // cache: 'no-cache' – zawsze pytaj serwer o nowszą wersję (GitHub Pages każe przeglądarce trzymać pliki 10 min).
   e.respondWith(
-    fetch(e.request)
-      .then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); return r; })
+    fetch(e.request, { cache: 'no-cache' })
+      .then(r => { if (r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); } return r; })
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
   );
 });
