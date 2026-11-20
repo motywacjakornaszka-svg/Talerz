@@ -92,9 +92,40 @@ W zakładce AI wklej klucz, kliknij **Pobierz listę**, wybierz model i kliknij 
 
 ---
 
+## Funkcje
+
+- **Motyw jasny / ciemny / automatyczny:** przycisk 🌗 w nagłówku albo **Profil → Wygląd**.
+- **Motywacja:**
+  - seria dni w limicie z rekordem;
+  - podgląd tygodnia: ✓ w limicie, ↑ ponad limit, ↓ za mało jedzenia;
+  - pasek postępu do wagi docelowej;
+  - wskazówka dnia, np. ile kroków brakuje i ile kcal to doda;
+  - odznaki.
+  Dzień, w którym zjesz mniej niż 60% limitu, **nie** liczy się do serii. Aplikacja celowo nie nagradza głodzenia się.
+- **Płyny 💧:**
+  - szybkie przyciski +150 / +250 / +330 / +500 ml, własna ilość i „cofnij”;
+  - dzienny cel: ok. 30 ml na kg masy ciała + dodatek za kroki, w zakresie 1,5–3,5 l (można ustawić ręcznie w Profilu);
+  - plan równych porcji od pobudki do godziny przed snem, pokazany na osi dnia razem z wypitymi napojami;
+  - wskaźnik regularności i zachęta, gdy minie pora porcji albo pojawi się zaległość;
+  - wykres z 14 dni w Historii, odznaki „Cel płynów” i „7 dni nawodnienia”.
+  Przypomnienia: powiadomienia, gdy aplikacja działa, albo plik `.ics` do kalendarza. Kalendarz przypomina także przy zamkniętej aplikacji.
+- **Szybka analiza (zakładka AI):**
+  - zdjęcie jest zmniejszane do 768 px;
+  - w Gemini model „myśli” krócej (`thinkingLevel: low`);
+  - analiza rusza od razu po zrobieniu zdjęcia;
+  - aplikacja pokazuje czas odpowiedzi.
+  Najszybsze modele to Gemini Flash-Lite i Claude Haiku.
+
+## Gdzie są zdjęcia posiłków
+
+- **Na telefonie** aplikacja zapisuje tylko **małą miniaturę** (160 px) przy posiłku, w pamięci przeglądarki/aplikacji. Pełnego zdjęcia aplikacja nie przechowuje.
+- **Do analizy** zmniejszona kopia zdjęcia jest wysyłana do Google (Gemini) albo Anthropic (Claude) i obowiązują tam ich zasady przechowywania danych. W darmowym planie Gemini Google może używać przesłanych danych do ulepszania usług.
+- **Galeria:** zdjęcie zrobione aparatem z poziomu aplikacji zwykle nie trafia do galerii telefonu. Zdjęcie wybrane z galerii zostaje tam, gdzie było.
+- **GitHub:** żadne zdjęcia ani dane nie trafiają do repozytorium.
+
 ## Aktualizacja aplikacji
 
-Po zmianie plików podbij `VERSION` w `sw.js` (np. `talerz-v2`). Dzięki temu telefony pobiorą nową wersję. Zwykle wystarczy potem zamknąć i ponownie otworzyć aplikację.
+Po zmianie plików podbij `VERSION` w `sw.js` (np. z `talerz-v3` na `talerz-v4`). Dzięki temu telefony pobiorą nową wersję. Zwykle wystarczy potem zamknąć i ponownie otworzyć aplikację.
 
 ## Kopia zapasowa
 

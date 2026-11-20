@@ -1,6 +1,6 @@
 // Service worker Talerza: działa offline, nie dotyka zapytań do API AI.
 // Po każdej zmianie plików aplikacji podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'talerz-v1';
+const VERSION = 'talerz-v3';
 const SHELL = [
   './',
   './index.html',
@@ -26,7 +26,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
+  if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return; // pomijaj blob:/data: (zdjęcia)
   // Fonty Google: z sieci, kopia w cache na offline.
   if (url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com')) {
     e.respondWith(
@@ -42,5 +42,16 @@ self.addEventListener('fetch', e => {
     fetch(e.request)
       .then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); return r; })
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+  );
+});
+
+// Kliknięcie w przypomnienie o wodzie otwiera aplikację.
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) if ('focus' in c) return c.focus();
+      return self.clients.openWindow('./');
+    })
   );
 });
