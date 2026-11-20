@@ -1,0 +1,17 @@
+{
+  "name": "Talerz – licznik kalorii ze zdjęć",
+  "short_name": "Talerz",
+  "description": "Licznik kalorii ze zdjęć posiłków i dzienny limit na odchudzanie liczony z kroków.",
+  "lang": "pl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F3EE",
+  "theme_color": "#2F7D5B",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
