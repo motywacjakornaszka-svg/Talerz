@@ -73,7 +73,15 @@ git push -u origin main
 
 ## 3. Instalacja na telefonie
 
-**Android (Chrome):** otwórz adres aplikacji, potem menu **⋮** i **Zainstaluj aplikację** (albo **Dodaj do ekranu głównego**).
+**Android (Chrome):**
+1. Otwórz adres aplikacji **w Chrome**. Wpisz go ręcznie albo kliknij **„Otwórz w Chrome”** w aplikacji (Profil → 📲). Link otwarty w Messengerze, Gmailu czy aplikacji Google działa w ich wbudowanej przeglądarce, która pozwala dodać tylko skrót.
+2. Poczekaj kilka sekund. Na ekranie „Dziś” pojawi się pasek **📲 Zainstaluj Talerz jako aplikację**, a w Profilu przycisk **Zainstaluj aplikację**.
+3. Albo ręcznie: menu **⋮** → **Zainstaluj aplikację**, a w starszych wersjach **Dodaj do ekranu głównego** → w okienku wybierz **Zainstaluj**, nie „Utwórz skrót”.
+4. Po instalacji Talerz jest na liście aplikacji. Przytrzymaj ikonę, żeby zobaczyć skróty **Dodaj posiłek** i **Dodaj wodę**.
+
+Jeśli wcześniej dodałeś skrót, usuń go z ekranu głównego, a potem zainstaluj według kroków powyżej.
+
+**Prawdziwy plik APK (opcjonalnie):** na https://www.pwabuilder.com wklej adres aplikacji → **Package for stores** → **Android** → pobierz paczkę i zainstaluj plik `.apk` z telefonu (trzeba zezwolić na instalację z nieznanych źródeł). Żeby zniknął pasek adresu, wgraj do repozytorium plik `.well-known/assetlinks.json` z paczki PWABuilder (plik `.nojekyll` w repozytorium sprawia, że GitHub Pages udostępni ten folder).
 
 **iPhone (Safari):** otwórz adres aplikacji, potem **Udostępnij** i **Do ekranu początkowego**.
 
@@ -105,30 +113,51 @@ W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go p
 
 ---
 
-## Funkcje
+## Funkcje (wersja 9)
 
-- **Motyw jasny / ciemny / automatyczny:** przycisk 🌗 w nagłówku albo **Profil → Wygląd**.
-- **Motywacja:**
-  - seria dni w limicie z rekordem;
-  - podgląd tygodnia: ✓ w limicie, ↑ ponad limit, ↓ za mało jedzenia;
-  - pasek postępu do wagi docelowej;
-  - wskazówka dnia, np. ile kroków brakuje i ile kcal to doda;
-  - odznaki.
-  Dzień, w którym zjesz mniej niż 60% limitu, **nie** liczy się do serii. Aplikacja celowo nie nagradza głodzenia się.
-- **Płyny 💧:**
-  - szybkie przyciski +150 / +250 / +330 / +500 ml, własna ilość i „cofnij”;
-  - dzienny cel: ok. 30 ml na kg masy ciała + dodatek za kroki, w zakresie 1,5–3,5 l (można ustawić ręcznie w Profilu);
-  - plan równych porcji od pobudki do godziny przed snem, pokazany na osi dnia razem z wypitymi napojami;
-  - **pasek tempa** na osi dnia: długość pokazuje, ile już wypiłeś, na tej samej skali co godziny. Gdy sięga kreski „teraz”, pijesz zgodnie z planem. Kolor zmienia się płynnie z czerwonego (≤50% planu na daną godzinę) przez pomarańczowy do zielonego (≥100%, z poświatą);
-  - wskaźnik regularności i zachęta, gdy minie pora porcji albo pojawi się zaległość;
-  - wykres z 14 dni w Historii, odznaki „Cel płynów” i „7 dni nawodnienia”.
-  Przypomnienia: powiadomienia, gdy aplikacja działa, albo plik `.ics` do kalendarza. Kalendarz przypomina także przy zamkniętej aplikacji.
-- **Szybka analiza (zakładka AI):**
-  - zdjęcie jest zmniejszane do 768 px;
-  - w Gemini model „myśli” krócej (`thinkingLevel: low`);
-  - analiza rusza od razu po zrobieniu zdjęcia;
-  - aplikacja pokazuje czas odpowiedzi.
-  Najszybsze modele to Gemini Flash-Lite i Claude Haiku.
+Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia zapisują się same, bez przycisku „Zapisz”.
+
+**Dziś**
+- 🎯 limit kalorii, makro, 👟 kroki i 🏋️ trening w jednej karcie (ⓘ pokazuje, jak liczony jest limit);
+- pasek jakości dnia:
+  - 🥦 warzywa i owoce (cel 400 g);
+  - 🍬 cukry wolne (max 30 g);
+  - 💧 odsetek dobrych napojów;
+- 💧 płyny:
+  - wybór napoju (12 rodzajów + własne, kolorowa kropka = ocena) i ilości;
+  - pasek tempa na osi dnia;
+  - pasek składu napojów;
+  - zamiennik po słodkim napoju, np. „−139 kcal, −35 g cukru”;
+- 🍽️ posiłki z oceną (🟢 → 🔴) i podpowiedzią zamiennika przy słabych wyborach; kalorie ze słodkich napojów dochodzą tu automatycznie;
+- 🔥 seria dni, tydzień, postęp do celu wagi, wskazówka dnia, odznaki.
+
+**Ranking napojów:**
+- 🟢 woda (zwykła i gazowana);
+- 🟢 herbata i kawa bez cukru;
+- 🟡 mleko, kefir, napój roślinny;
+- 🟡 sok 100% do 150 ml dziennie (powyżej 🔴);
+- 🟠 napoje zero;
+- 🔴 cola i inne słodzone napoje, nektary, energetyki, alkohol (alkohol nie liczy się do nawodnienia).
+
+**Ranking jedzenia** (kategorie nadaje AI albo wybierasz ręcznie):
+- 🥦🍎🫘 najlepsze;
+- 🌾🍗🧀🥜 dobre;
+- 🍞 z umiarem;
+- 🍟 ograniczaj;
+- 🍩 odradzane.
+
+Ocena posiłku to średnia ważona kaloriami składników. Gdy posiłek ma ponad 15 g cukrów wolnych, ocena spada do „ograniczaj”.
+
+**Historia:** wykresy z 14 dni: kalorie, warzywa i owoce, cukry wolne, płyny, waga.
+
+**Profil:** dane, nawodnienie (🔔 powiadomienia, 📅 przypomnienia w kalendarzu), 📸 klucze AI, 🎨 wygląd, 📲 instalacja, 💾 kopia danych.
+
+**AI bez ustawień technicznych:**
+- model jest wybierany automatycznie: najnowszy stabilny Gemini Flash albo Claude Haiku. Gdy dostawca wycofa model, aplikacja sama przełączy się na nowy;
+- najpierw używane są klucze Gemini, potem Claude. Po wyczerpaniu limitu aplikacja przechodzi do następnego klucza;
+- analiza startuje od razu po zrobieniu zdjęcia (zdjęcie zmniejszone do 768 px, krótkie „myślenie” modelu).
+
+**Wygląd:** 9 gotowych zestawów, tryb jasny/ciemny/auto, a w „Kolory i tła” 7 palet, 10 teł i wyciszenie tła.
 
 ## Gdzie są zdjęcia posiłków
 

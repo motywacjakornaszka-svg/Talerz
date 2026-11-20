@@ -1,6 +1,6 @@
 // Service worker Talerza: działa offline, nie dotyka zapytań do API AI.
 // Po każdej zmianie plików aplikacji podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'talerz-v6';
+const VERSION = 'talerz-v9';
 const SHELL = [
   './',
   './index.html',
@@ -9,7 +9,9 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
-  './icons/favicon.svg'
+  './icons/favicon.svg',
+  './screenshots/dzis.png',
+  './screenshots/plyny.png'
 ];
 
 self.addEventListener('install', e => {
