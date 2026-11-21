@@ -323,6 +323,17 @@
   .kst{font-family:Manrope,system-ui,sans-serif;font-size:12px;margin-left:4px}
   .keyitem .k{font-family:ui-monospace,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   @media (max-width:380px){ .dchip{min-width:56px} .grid3{gap:6px} .pf span{font-size:11px} .seg3 button{font-size:12.5px} }
+  .fabs{position:fixed;right:max(16px,calc(50% - 264px));bottom:84px;display:flex;gap:10px;z-index:15}
+  .fab2{border:0;border-radius:999px;height:52px;min-width:52px;padding:0 16px;background:var(--card);color:var(--ink);font-weight:800;font-size:20px;box-shadow:0 6px 20px rgba(0,0,0,.18);cursor:pointer;border:1px solid var(--line)}
+  .fab2.main{background:var(--accent);color:#fff;font-size:15px;border:0;padding:0 20px}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .picktile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:118px;border:2px dashed var(--line);border-radius:16px;background:var(--card);cursor:pointer;overflow:hidden;color:var(--ink);font:inherit;padding:0}
+  .picktile .pi{font-size:34px;line-height:1}
+  .picktile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0;max-height:none}
+  #micBtn.rec{border-color:#D9443B;border-style:solid;background:color-mix(in srgb,#D9443B 12%,var(--card))}
+  #micBtn.rec .pi{animation:micpulse 1s ease-in-out infinite}
+  @keyframes micpulse{50%{transform:scale(1.18)}}
+  .slowbox{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.on{opacity:1}
 </style>
@@ -330,7 +341,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="var(--accent)"/><circle cx="32" cy="32" r="21" fill="var(--card)"/><circle cx="32" cy="32" r="14" fill="none" stroke="var(--accent)" stroke-width="2" opacity=".35"/><path d="M32 22c-5 3-7 8-5 13 5-1 8-5 9-10-1-1-2-2-4-3z" fill="var(--accent)"/></svg><span>Talerz<span>.</span></span></div>
+    <div class="brand"><svg width="30" height="30" aria-hidden="true" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="var(--accent)"/> <circle cx="256" cy="256" r="138" fill="var(--card)"/> <circle cx="256" cy="256" r="98" fill="none" stroke="var(--accent)" stroke-width="9" opacity=".28"/> <path d="M256 196c-26 14-38 42-26 70 28-5 44-28 48-56-6-6-13-11-22-14z" fill="var(--accent)"/> <path d="M252 272c2-14 6-26 14-38" stroke="var(--card)" stroke-width="6" stroke-linecap="round" fill="none"/> <g fill="var(--card)"> <rect x="58" y="108" width="11" height="74" rx="5.5"/> <rect x="77" y="108" width="11" height="74" rx="5.5"/> <rect x="96" y="108" width="11" height="74" rx="5.5"/> <path d="M58 168h49v14c0 15-8 25-12.5 29V400c0 9-5 16-12 16s-12-7-12-16V211c-4.5-4-12.5-14-12.5-29z"/> </g> <g fill="var(--card)"> <ellipse cx="438" cy="160" rx="31" ry="48"/> <path d="M428 200h20v198c0 9-4 16-10 16s-10-7-10-16z"/> </g></svg><span>Talerz<span>.</span></span></div>
     <div class="row" style="gap:6px">
       <button class="themebtn" id="themeBtn" aria-label="Tryb jasny/ciemny"></button>
       <div class="datenav" id="datenav">
@@ -566,7 +577,7 @@
   </section>
 </div>
 
-<button class="fab hidden" id="fab" aria-label="Dodaj posiłek">📷 Posiłek</button>
+<div class="fabs hidden" id="fab"><button class="fab2" id="fabMic" aria-label="Powiedz, co jesz">🎤</button><button class="fab2 main" id="fabAdd" aria-label="Dodaj posiłek">＋ Posiłek</button></div>
 
 <nav class="tabs"><div class="in">
   <button data-tab="today" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='5'/></svg>Dziś</button>
@@ -579,14 +590,17 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="row" style="justify-content:space-between"><h3 id="sheetTitle">🍽️ Nowy posiłek</h3><button class="iconbtn" id="closeSheet" aria-label="Zamknij">✕</button></div>
 
-    <label class="drop" id="drop" for="photo">
-      <div id="dropTxt"><div style="font-size:34px">📷</div><b>Zrób zdjęcie</b></div>
-      <img id="preview" class="hidden" alt="Podgląd posiłku">
-    </label>
+    <div class="pick">
+      <label class="picktile" id="drop" for="photo">
+        <div id="dropTxt"><div class="pi">📷</div><b>Zdjęcie</b></div>
+        <img id="preview" class="hidden" alt="Podgląd posiłku">
+      </label>
+      <button class="picktile" id="micBtn" type="button"><div class="pi" id="micIcon">🎤</div><b id="micLabel">Powiedz</b></button>
+    </div>
     <input type="file" id="photo" accept="image/*" capture="environment" class="hidden">
     <div class="row" style="margin-top:8px">
-      <input id="hint" type="text" placeholder="💬 np. duża porcja, smażone">
-      <button class="btn" id="analyze" disabled aria-label="Policz ponownie">↻</button>
+      <input id="hint" type="text" enterkeyhint="send" placeholder="💬 np. 2 jajka, kromka chleba, kawa z mlekiem">
+      <button class="btn" id="analyze" disabled aria-label="Policz">➜</button>
     </div>
     <div id="aiStatus" class="small" style="margin-top:8px"></div>
     <button class="btn ghost block" id="manual" style="margin-top:8px">✍️ Wpisz ręcznie</button>
@@ -620,7 +634,7 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const APP_VERSION = '11';
+  const APP_VERSION = '12';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -1052,13 +1066,14 @@
   function openSheet(){
     photoBlob = null; photoB64 = null; thumb = null; items = [];
     $('preview').classList.add('hidden'); $('dropTxt').classList.remove('hidden');
-    $('photo').value = ''; $('hint').value = ''; $('analyze').disabled = true; $('aiStatus').innerHTML = '';
+    $('photo').value = ''; $('hint').value = ''; $('analyze').disabled = true; $('aiStatus').innerHTML = ''; stopMic(true);
     $('result').classList.add('hidden'); $('mealName').value = ''; $('aiNotes').textContent = '';
     $('manual').classList.remove('hidden'); document.querySelectorAll('#result .card').forEach(n => n.remove()); $('addItem').classList.remove('hidden');
     $('sheetBg').classList.add('open');
   }
-  function closeSheet(){ if (aiAbort) aiAbort.abort(); $('sheetBg').classList.remove('open'); }
-  $('fab').onclick = openSheet;
+  function closeSheet(){ if (aiAbort) aiAbort.abort(); stopMic(true); $('sheetBg').classList.remove('open'); }
+  $('fabAdd').onclick = () => openSheet();
+  $('fabMic').onclick = () => { openSheet(); startMic(); };
   $('closeSheet').onclick = closeSheet;
   $('sheetBg').addEventListener('click', e => { if (e.target === $('sheetBg')) closeSheet(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheet(); $('drinkSheetBg').classList.remove('open'); } });
@@ -1074,7 +1089,7 @@
     const f = e.target.files && e.target.files[0]; if (!f) return;
     try {
       const im = await loadImage(f);
-      photoBlob = await scaled(im, 768, 0.8, false);
+      photoBlob = await scaled(im, 640, 0.78, false);
       photoB64 = blobToBase64(photoBlob);
       thumb = scaled(im, 160, 0.7, true);
       $('preview').src = scaled(im, 720, 0.8, true);
@@ -1091,6 +1106,12 @@ Każdemu składnikowi przypisz kategorię: ${CAT_LIST} (warzywa = warzywa i ziem
 Odpowiedz WYŁĄCZNIE poprawnym JSON-em:
 {"meal_name":"krótka nazwa po polsku","items":[{"name":"składnik po polsku","category":"warzywa","grams":120,"kcal":200,"protein":10.5,"carbs":20,"fat":8,"free_sugar":0}],"confidence":"niska|średnia|wysoka","notes":"max 8 słów po polsku"}
 Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","notes":"Nie widzę jedzenia"}`;
+  const PROMPT_TEXT = (desc) => `Jesteś dietetykiem. Użytkownik opisał słowami, co zjadł lub zje: "${desc.replace(/"/g,"'")}".
+Rozbij to na składniki. Gdy nie podano ilości, przyjmij typową porcję dorosłego (np. kromka chleba 35 g, jajko 55 g, łyżka masła 10 g, szklanka 250 ml). Oszacuj masę w gramach, kalorie, makroskładniki i cukry wolne (dodany cukier, miód, syropy, soki; NIE cukier naturalny z całych owoców, warzyw i mleka).
+Każdemu składnikowi przypisz kategorię: ${CAT_LIST} (przetworzone = smażone, fast food, wędliny, chipsy; slodycze = słodycze, ciasta, pączki, batony, lody; rafinowane = białe pieczywo, biały ryż, zwykły makaron). Napoje (kawa, herbata, sok, cola) też podaj jako składniki z kategorią inne.
+Odpowiedz WYŁĄCZNIE poprawnym JSON-em:
+{"meal_name":"krótka nazwa po polsku","items":[{"name":"składnik","category":"warzywa","grams":120,"kcal":200,"protein":10.5,"carbs":20,"fat":8,"free_sugar":0}],"confidence":"niska|średnia|wysoka","notes":"max 8 słów"}
+Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska","notes":"Nie rozpoznano posiłku"}`;
   function parseJson(txt){
     if (typeof txt !== 'string') return txt;
     const s = txt.indexOf('{'), e = txt.lastIndexOf('}');
@@ -1098,7 +1119,8 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
   }
 
   async function runAnalysis(){
-    if (!photoBlob) return;
+    const desc = $('hint').value.trim();
+    if (!photoBlob && !desc) return;
     const st = $('aiStatus');
     if (!hasAnyKey(aiCfg())) {
       st.innerHTML = '🔑 <a href="#" id="goAi">Dodaj klucz AI w Profilu</a> albo wpisz ręcznie.';
@@ -1106,24 +1128,74 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
       $('manual').classList.remove('hidden');
       return;
     }
+    if (aiAbort) aiAbort.abort();
     $('analyze').disabled = true;
     const t0 = performance.now();
-    st.innerHTML = `<span class="spinner"></span>&nbsp; Liczę… <span id="tick">0,0 s</span>`;
-    const tick = setInterval(() => { const el = $('tick'); if (el) el.textContent = ((performance.now()-t0)/1000).toFixed(1).replace('.',',') + ' s'; }, 100);
-    aiAbort = new AbortController();
+    const secs = () => ((performance.now()-t0)/1000).toFixed(1).replace('.',',');
+    st.innerHTML = `<span class="spinner"></span>&nbsp; Liczę… <span id="tick">0,0 s</span><span id="slow"></span>`;
+    const tick = setInterval(() => {
+      const el = $('tick'); if (el) el.textContent = secs() + ' s';
+      const sl = $('slow');
+      if (sl && !sl.dataset.on && performance.now() - t0 > 9000) {
+        sl.dataset.on = 1;
+        sl.innerHTML = `<div class="slowbox"><span class="muted">⏳ Długo?</span><button class="btn ghost" id="slowMic">🎤 Powiedz</button><button class="btn ghost" id="slowMan">✍️ Ręcznie</button></div>`;
+        $('slowMic').onclick = () => { if (aiAbort) aiAbort.abort(); photoBlob = null; photoB64 = null; $('preview').classList.add('hidden'); $('dropTxt').classList.remove('hidden'); $('hint').value = ''; startMic(); };
+        $('slowMan').onclick = () => { if (aiAbort) aiAbort.abort(); st.innerHTML = ''; $('manual').click(); };
+      }
+    }, 100);
+    const ctrl = aiAbort = new AbortController();
     try {
-      const r = await askWithRotation(PROMPT($('hint').value.trim()), await photoB64, aiAbort.signal);
+      const r = photoBlob
+        ? await askWithRotation(PROMPT(desc), await photoB64, ctrl.signal, s2 => { const el = $('tick'); if (el && s2) el.textContent = s2; })
+        : await askWithRotation(PROMPT_TEXT(desc), null, ctrl.signal);
       const data = parseJson(r.text);
-      st.innerHTML = `<span class="status-ok">✓ ${((performance.now()-t0)/1000).toFixed(1).replace('.',',')} s</span>`;
+      st.innerHTML = `<span class="status-ok">✓ ${secs()} s</span>`;
       showResult(data);
+      $('manual').classList.add('hidden');
     } catch (e) {
-      if (e && e.name === 'AbortError') return;
+      if (e && e.name === 'AbortError') { if (aiAbort === ctrl) st.innerHTML = ''; return; }
       st.innerHTML = '<span class="status-err">⚠️ ' + esc(e && e.message || 'Nie udało się.') + '</span>';
       $('manual').classList.remove('hidden');
-    } finally { clearInterval(tick); $('analyze').disabled = false; aiAbort = null; }
+    } finally { clearInterval(tick); $('analyze').disabled = !photoBlob && !$('hint').value.trim(); if (aiAbort === ctrl) aiAbort = null; }
   }
+
+  // ---------- 🎤 mowa → tekst ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, recText = '';
+  function setMicUi(on){
+    $('micBtn').classList.toggle('rec', on);
+    $('micIcon').textContent = on ? '🔴' : '🎤';
+    $('micLabel').textContent = on ? 'Słucham… (stop)' : 'Powiedz';
+  }
+  function stopMic(silent){
+    if (rec) { const r = rec; rec = null; if (silent) r.onend = null; try { r.stop(); } catch {} }
+    setMicUi(false);
+  }
+  function startMic(){
+    if (rec) { stopMic(); return; }
+    if (!SR) { $('hint').focus(); toast('🎤 Użyj mikrofonu na klawiaturze'); return; }
+    const base = photoBlob ? $('hint').value.trim() : '';
+    recText = '';
+    const r = rec = new SR();
+    r.lang = 'pl-PL'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+    r.onresult = e => {
+      let txt = ''; for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+      recText = txt.trim(); $('hint').value = (base ? base + ', ' : '') + recText;
+      $('analyze').disabled = false;
+    };
+    r.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('🎤 Zezwól na mikrofon w przeglądarce');
+      else if (e.error === 'no-speech') toast('🎤 Nic nie usłyszałem – spróbuj jeszcze raz');
+      else if (e.error !== 'aborted') toast('🎤 Mikrofon niedostępny – wpisz tekst');
+    };
+    r.onend = () => { const had = rec === r; rec = null; setMicUi(false); if (had && recText) runAnalysis(); };
+    try { r.start(); setMicUi(true); } catch { rec = null; setMicUi(false); $('hint').focus(); }
+  }
+  $('micBtn').onclick = () => startMic();
+
   $('analyze').onclick = runAnalysis;
-  $('hint').addEventListener('keydown', e => { if (e.key === 'Enter' && photoBlob) runAnalysis(); });
+  $('hint').addEventListener('input', () => { $('analyze').disabled = !photoBlob && !$('hint').value.trim(); });
+  $('hint').addEventListener('keydown', e => { if (e.key === 'Enter' && (photoBlob || $('hint').value.trim())) runAnalysis(); });
   $('manual').onclick = () => { showResult({ meal_name:'', items:[] }); $('manual').classList.add('hidden'); $('addItem').click(); };
 
   function showResult(data){
@@ -1483,18 +1555,22 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
     if (b64) parts.push({ inline_data:{ mime_type:'image/jpeg', data:b64 } });
     parts.push({ text:prompt });
     const model = (cfg.geminiModel || AI_DEFAULTS.geminiModel).trim().replace(/^models\//,'');
-    const call = (thinking) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    const call = (level) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method:'POST', signal,
       headers:{ 'content-type':'application/json', 'x-goog-api-key':key.trim() },
       body: JSON.stringify({ contents:[{ role:'user', parts }], generationConfig: Object.assign(
-        { temperature:0.2, responseMimeType:'application/json' },
-        thinking ? { thinkingConfig:{ thinkingLevel:'low' } } : {}) })
+        { temperature:0.2, responseMimeType:'application/json', maxOutputTokens:1200 },
+        level ? { thinkingConfig:{ thinkingLevel:level } } : {}) })
     });
-    // Tryb szybki: ogranicz „myślenie” modelu. Starsze modele nie znają tego parametru – wtedy ponów bez niego.
-    let resp = await call(!!cfg.fast);
-    if (!resp.ok && cfg.fast && resp.status === 400) {
+    // Jak najmniej „myślenia” = szybsza odpowiedź. Gdy model nie zna poziomu – próbuj kolejnego.
+    const remembered = cfg.thinkLevel && cfg.thinkLevel[model];
+    const levels = remembered !== undefined ? [remembered] : ['minimal', 'low', null];
+    let resp;
+    for (let li = 0; li < levels.length; li++) {
+      resp = await call(levels[li]);
+      if (resp.ok || resp.status !== 400) { if (resp.ok && remembered === undefined) { const c2 = aiCfg(); c2.thinkLevel = Object.assign({}, c2.thinkLevel, { [model]: levels[li] }); saveAiCfg(c2); } break; }
       const t = await resp.clone().text();
-      if (/thinking/i.test(t)) resp = await call(false);
+      if (!/thinking/i.test(t)) break;
     }
     if (!resp.ok) throw await classify(resp, 'Gemini');
     const j = await resp.json();
@@ -1507,25 +1583,43 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
 
 
   // Kolejno: wszystkie klucze Gemini, potem Claude. Po limicie – następny klucz.
-  async function askWithRotation(prompt, b64, signal){
+  // Kolejno: klucze Gemini, potem Claude. Po limicie – następny klucz; gdy model długo milczy – szybszy model.
+  const TIMEOUT_IMG = 18000, TIMEOUT_TXT = 12000;
+  function withTimeout(signal, ms){
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(new DOMException('timeout', 'TimeoutError')), ms);
+    if (signal) { if (signal.aborted) c.abort(signal.reason); else signal.addEventListener('abort', () => c.abort(signal.reason), { once:true }); }
+    return { signal:c.signal, done:() => clearTimeout(t), isTimeout:() => c.signal.aborted && !(signal && signal.aborted) };
+  }
+  async function askWithRotation(prompt, b64, signal, onSwitch){
     const notes = []; let nextFree = Infinity, lastErr = null, tried = 0;
+    const limitMs = b64 ? TIMEOUT_IMG : TIMEOUT_TXT;
     for (const prov of ['gemini', 'claude']) {
       const list = aiCfg().keys[prov];
       for (let i = 0; i < list.length; i++) {
         const k = list[i];
         if (!isUsable(k)) { if (k.until) nextFree = Math.min(nextFree, k.until); continue; }
         tried++;
-        for (let attempt = 0; attempt < 2; attempt++) {
+        let useLite = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const cfg = aiCfg();
+          if (useLite) { if (prov === 'gemini' && cfg.geminiLite) cfg.geminiModel = cfg.geminiLite; else break; }
+          const tw = withTimeout(signal, limitMs);
           try {
-            const text = await callProvider(prov, k.key, aiCfg(), prompt, b64, signal);
+            const text = await callProvider(prov, k.key, cfg, prompt, b64, tw.signal);
+            tw.done();
             const today = todayKey();
             markKey(prov, k.id, { state:'ok', until:0, note:'', usedDay:today, used:(k.usedDay === today ? (k.used || 0) : 0) + 1, lastOk:Date.now() });
             return { text, prov, key:k, idx:i, notes };
           } catch (e) {
+            tw.done();
+            if (tw.isTimeout()) { lastErr = new ApiErr('Model odpowiada zbyt długo.', 'overload'); notes.push('timeout');
+              if (!useLite && prov === 'gemini' && aiCfg().geminiLite) { useLite = true; if (onSwitch) onSwitch('⚡ szybszy model…'); continue; }
+              break; }
             if (e && e.name === 'AbortError') throw e;
             lastErr = e;
             const kind = e.kind || 'other';
-            if (kind === 'model' && attempt === 0) { await pickModel(prov, k.key, true); continue; }   // model wycofany – wybierz nowy i ponów
+            if (kind === 'model' && attempt === 0) { await pickModel(prov, k.key, true); continue; }
             if (kind === 'limit' || kind === 'credit') {
               const until = Date.now() + e.retryMs; nextFree = Math.min(nextFree, until);
               markKey(prov, k.id, { state:kind, until, note:e.message }); notes.push(kind);
@@ -1534,11 +1628,11 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
             break;
           }
         }
-        if (lastErr && lastErr.kind === 'overload') break;
+        if (lastErr && lastErr.kind === 'overload') break;   // ten sam serwer – spróbuj drugiego dostawcy
       }
     }
     if (!tried && nextFree === Infinity) throw new Error('Brak działającego klucza AI – sprawdź w Profilu.');
-    throw new Error((lastErr && lastErr.kind === 'overload' ? 'Serwer AI zajęty – spróbuj za chwilę.' : 'Limit kluczy AI wyczerpany.') + (nextFree < Infinity ? ` Wróci ok. ${hhmm(nextFree)}.` : ''));
+    throw new Error((lastErr && lastErr.kind === 'overload' ? 'AI odpowiada zbyt wolno – spróbuj 🎤 albo wpisz ręcznie.' : 'Limit kluczy AI wyczerpany.') + (nextFree < Infinity ? ` Wróci ok. ${hhmm(nextFree)}.` : ''));
   }
 
   async function listModels(provider, key){
@@ -1557,7 +1651,6 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
   }
 
 
-
   // Automatyczny wybór modelu: najnowszy stabilny Flash (Gemini) / Haiku (Claude)
   async function pickModel(prov, key, force){
     const c = aiCfg();
@@ -1570,6 +1663,8 @@ Jeśli nie widać jedzenia: {"meal_name":"","items":[],"confidence":"niska","not
         const stable = ms.filter(id => /flash/.test(id) && !/lite|preview|exp|thinking|8b/.test(id));
         const pool = stable.length ? stable : ms.filter(id => /flash/.test(id));
         best = pool.sort((a, b) => ver(b) - ver(a) || a.length - b.length)[0];
+        const lites = ms.filter(id => /flash-lite/.test(id) && !/preview|exp/.test(id)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
+        const c3 = aiCfg(); c3.geminiLite = lites[0] || null; saveAiCfg(c3);
       } else {
         best = ms.find(id => /haiku/.test(id)) || ms.find(id => /sonnet/.test(id)) || ms[0];
       }
