@@ -114,7 +114,7 @@ W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go p
 
 ---
 
-## Funkcje (wersja 9)
+## Funkcje (wersja 14)
 
 Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia zapisują się same, bez przycisku „Zapisz”.
 
@@ -130,7 +130,7 @@ Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia z
   - pasek składu napojów;
   - zamiennik po słodkim napoju, np. „−139 kcal, −35 g cukru”;
 - ➕ dodawanie posiłku na 3 sposoby: **📷 zdjęcie**, **🎤 powiedz** (np. „dwa jajka i kromka chleba”) albo wpisz opis; Rozpoznawanie mowy działa w Chrome, Edge i Safari; w innych przeglądarkach użyj mikrofonu na klawiaturze.
-- ⚡ szybsza analiza: mniejsze zdjęcie, minimalne „myślenie” modelu, a gdy model milczy ponad 18 s, aplikacja przełącza się na szybszy model (Flash-Lite) albo następny klucz. Po 9 s pojawia się skrót „🎤 Powiedz / ✍️ Ręcznie”;
+- ⚡ analiza bez limitu czasu: aplikacja czeka na odpowiedź AI, dopóki nie klikniesz **⏹ Przerwij**. Gdy serwer jest przeciążony, ponawia zapytanie (do 4 razy), potem próbuje szybszego modelu, następnego klucza albo drugiego dostawcy. Ekran nie gaśnie w trakcie analizy;
 - 🍽️ posiłki z oceną (🟢 → 🔴) i podpowiedzią zamiennika przy słabych wyborach; kalorie ze słodkich napojów dochodzą tu automatycznie;
 - 🔥 seria dni, tydzień, postęp do celu wagi, wskazówka dnia, odznaki.
 
