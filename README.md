@@ -108,13 +108,15 @@ W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go p
 - Opcja **„Przełącz na drugiego dostawcę”**: gdy wyczerpią się wszystkie klucze Gemini, aplikacja użyje kluczy Claude (i odwrotnie).
 - Przy każdym kluczu widać jego stan (● działa / ⏸ limit do godz. … / ✗ nieprawidłowy) i liczbę dzisiejszych użyć.
 
+**AI nie odpowiada?** W Profilu kliknij **🩺 Sprawdź AI**. Aplikacja przetestuje każdy klucz i pokaże czas odpowiedzi albo dokładny błąd. Ostatnie zapytania i błędy znajdziesz w **📋 Dziennik AI**.
+
 > Regulaminy dostawców mogą zabraniać obchodzenia limitów, np. przez zakładanie wielu darmowych projektów tylko w tym celu. Bezpiecznie jest łączyć np. darmowy klucz z płatnym albo klucze różnych dostawców.
 
 > ⚠️ **Nigdy nie wpisuj klucza do kodu ani nie commituj go do repozytorium.** Aplikacja wywołuje API bezpośrednio z telefonu, więc klucz jest bezpieczny tylko na Twoim urządzeniu. Dla Claude ustaw w Console miesięczny limit wydatków.
 
 ---
 
-## Funkcje (wersja 14)
+## Funkcje (wersja 9)
 
 Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia zapisują się same, bez przycisku „Zapisz”.
 
@@ -130,7 +132,7 @@ Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia z
   - pasek składu napojów;
   - zamiennik po słodkim napoju, np. „−139 kcal, −35 g cukru”;
 - ➕ dodawanie posiłku na 3 sposoby: **📷 zdjęcie**, **🎤 powiedz** (np. „dwa jajka i kromka chleba”) albo wpisz opis; Rozpoznawanie mowy działa w Chrome, Edge i Safari; w innych przeglądarkach użyj mikrofonu na klawiaturze.
-- ⚡ analiza bez limitu czasu: aplikacja czeka na odpowiedź AI, dopóki nie klikniesz **⏹ Przerwij**. Gdy serwer jest przeciążony, ponawia zapytanie (do 4 razy), potem próbuje szybszego modelu, następnego klucza albo drugiego dostawcy. Ekran nie gaśnie w trakcie analizy;
+- ⚡ szybsza analiza: mniejsze zdjęcie i minimalne „myślenie” modelu. Aplikacja czeka na odpowiedź do 60 s przy zdjęciu i do 45 s przy opisie, potem próbuje modelu zapasowego albo następnego klucza. Po 20 s pojawia się skrót „🎤 Powiedz / ✍️ Ręcznie”;
 - 🍽️ posiłki z oceną (🟢 → 🔴) i podpowiedzią zamiennika przy słabych wyborach; kalorie ze słodkich napojów dochodzą tu automatycznie;
 - 🔥 seria dni, tydzień, postęp do celu wagi, wskazówka dnia, odznaki.
 
@@ -156,7 +158,7 @@ Ocena posiłku to średnia ważona kaloriami składników. Gdy posiłek ma ponad
 **Profil:** dane, nawodnienie (🔔 powiadomienia, 📅 przypomnienia w kalendarzu), 📸 klucze AI, 🎨 wygląd, 📲 instalacja, 💾 kopia danych.
 
 **AI bez ustawień technicznych:**
-- model jest wybierany automatycznie: najnowszy stabilny Gemini Flash albo Claude Haiku. Gdy dostawca wycofa model, aplikacja sama przełączy się na nowy;
+- model jest wybierany automatycznie: najnowszy stabilny **Gemini Flash-Lite** (szybki, większy darmowy limit), a jako zapasowy zwykły Gemini Flash; dla Claude – Haiku. Limity Google są liczone osobno dla każdego modelu, więc gdy jeden model wyczerpie limit, aplikacja przechodzi na drugi z tym samym kluczem. Gdy dostawca wycofa model, aplikacja sama przełączy się na nowy;
 - najpierw używane są klucze Gemini, potem Claude. Po wyczerpaniu limitu aplikacja przechodzi do następnego klucza;
 - analiza startuje od razu po zrobieniu zdjęcia (zdjęcie zmniejszone do 768 px, krótkie „myślenie” modelu).
 

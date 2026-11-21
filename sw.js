@@ -1,6 +1,6 @@
 // Service worker Talerza: działa offline, nie dotyka zapytań do API AI.
 // Po każdej zmianie plików aplikacji podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'talerz-v14';
+const VERSION = 'talerz-v16';
 const SHELL = [
   './',
   './index.html',

@@ -545,6 +545,9 @@
         <div class="keyrow"><input id="cKeyNew" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej klucz sk-ant-…"><button class="btn" id="cKeyAdd" aria-label="Dodaj klucz">＋</button></div>
       </div>
       <div class="small muted" id="aiActive"></div>
+      <button class="btn ghost block" id="aiDiag" style="margin-top:8px">🩺 Sprawdź AI</button>
+      <div id="aiDiagOut" class="small" style="margin-top:8px"></div>
+      <details class="more"><summary>📋 Dziennik AI</summary><div id="aiLogBox" class="small muted" style="margin-top:6px"></div></details>
     </div>
 
     <div class="card">
@@ -640,7 +643,7 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const APP_VERSION = '14';
+  const APP_VERSION = '16';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -1120,7 +1123,8 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
   function parseJson(txt){
     if (typeof txt !== 'string') return txt;
     const s = txt.indexOf('{'), e = txt.lastIndexOf('}');
-    return JSON.parse(txt.slice(s, e+1));
+    try { if (s < 0 || e < s) throw 0; return JSON.parse(txt.slice(s, e+1)); }
+    catch { aiLog({ ok:false, msg:'niepoprawny JSON: ' + txt.slice(0, 120) }); throw new Error('AI zwróciło niepełną odpowiedź – spróbuj ponownie.'); }
   }
 
   async function runAnalysis(){
@@ -1137,26 +1141,23 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     $('analyze').disabled = true;
     const t0 = performance.now();
     const secs = () => ((performance.now()-t0)/1000).toFixed(1).replace('.',',');
-    st.innerHTML = `<span class="spinner"></span>&nbsp; Liczę… <span id="tick">0,0 s</span> <span id="aiMsg" class="muted"></span>`
-      + `<div class="slowbox"><button class="btn ghost" id="aiStop">⏹ Przerwij</button><span id="slow"></span></div>`;
-    $('aiStop').onclick = () => { if (aiAbort) aiAbort.abort(); st.innerHTML = '<span class="muted">⏹ Przerwano</span>'; $('manual').classList.remove('hidden'); };
+    st.innerHTML = `<span class="spinner"></span>&nbsp; Liczę… <span id="tick">0,0 s</span><span id="slow"></span>`;
     const tick = setInterval(() => {
       const el = $('tick'); if (el) el.textContent = secs() + ' s';
       const sl = $('slow');
       if (sl && !sl.dataset.on && performance.now() - t0 > 20000) {
         sl.dataset.on = 1;
-        sl.innerHTML = `<span class="muted small">⏳ AI wciąż liczy – czekam, dopóki nie przerwiesz.</span>`;
+        sl.innerHTML = `<div class="slowbox"><span class="muted">⏳ Długo?</span><button class="btn ghost" id="slowMic">🎤 Powiedz</button><button class="btn ghost" id="slowMan">✍️ Ręcznie</button></div>`;
+        $('slowMic').onclick = () => { if (aiAbort) aiAbort.abort(); photoBlob = null; photoB64 = null; $('preview').classList.add('hidden'); $('dropTxt').classList.remove('hidden'); $('hint').value = ''; startMic(); };
+        $('slowMan').onclick = () => { if (aiAbort) aiAbort.abort(); st.innerHTML = ''; $('manual').click(); };
       }
-    }, 200);
-    const onStatus = msg => { const el = $('aiMsg'); if (el) el.textContent = msg || ''; };
+    }, 100);
     const ctrl = aiAbort = new AbortController();
-    let wake = null; try { wake = await navigator.wakeLock?.request('screen'); } catch {}
     try {
       const r = photoBlob
-        ? await askWithRotation(PROMPT(desc), await photoB64, ctrl.signal, onStatus)
-        : await askWithRotation(PROMPT_TEXT(desc), null, ctrl.signal, onStatus);
-      let data;
-      try { data = parseJson(r.text); } catch { throw new Error('AI zwróciło niepełną odpowiedź – kliknij ➜, aby spróbować ponownie.'); }
+        ? await askWithRotation(PROMPT(desc), await photoB64, ctrl.signal, s2 => { const el = $('tick'); if (el && s2) el.textContent = s2; })
+        : await askWithRotation(PROMPT_TEXT(desc), null, ctrl.signal);
+      const data = parseJson(r.text);
       st.innerHTML = `<span class="status-ok">✓ ${secs()} s</span>`;
       showResult(data);
       $('manual').classList.add('hidden');
@@ -1164,7 +1165,7 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
       if (e && e.name === 'AbortError') { if (aiAbort === ctrl) st.innerHTML = ''; return; }
       st.innerHTML = '<span class="status-err">⚠️ ' + esc(e && e.message || 'Nie udało się.') + '</span>';
       $('manual').classList.remove('hidden');
-    } finally { clearInterval(tick); try { wake && wake.release(); } catch {} $('analyze').disabled = !photoBlob && !$('hint').value.trim(); if (aiAbort === ctrl) aiAbort = null; }
+    } finally { clearInterval(tick); $('analyze').disabled = !photoBlob && !$('hint').value.trim(); if (aiAbort === ctrl) aiAbort = null; }
   }
 
   // ---------- 🎤 mowa → tekst ----------
@@ -1175,12 +1176,18 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     $('micIcon').textContent = on ? '🔴' : '🎤';
     $('micLabel').textContent = on ? 'Słucham… (stop)' : 'Powiedz';
   }
+  // silent = zamknięcie okna (bez analizy); zwykły stop = zakończ słuchanie i policz to, co powiedziano.
+  function finishMic(r){
+    if (rec !== r) return;
+    rec = null; setMicUi(false);
+    if (recText) runAnalysis();
+  }
   function stopMic(silent){
     if (!rec) { setMicUi(false); return; }
     const r = rec;
-    if (silent) { rec = null; r.onend = null; try { r.abort(); } catch {} setMicUi(false); return; }
-    // ręczne „stop”: kończymy nagrywanie, a onend wyśle rozpoznany tekst do AI
-    try { r.stop(); } catch { rec = null; setMicUi(false); }
+    if (silent) { r.onend = null; rec = null; try { r.abort(); } catch {} setMicUi(false); return; }
+    try { r.stop(); } catch {}
+    setTimeout(() => finishMic(r), 1500); // gdy przeglądarka nie wywoła onend
   }
   function startMic(){
     if (rec) { stopMic(); return; }
@@ -1196,9 +1203,10 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     };
     r.onerror = e => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('🎤 Zezwól na mikrofon w przeglądarce');
+      else if (e.error === 'no-speech') toast('🎤 Nic nie usłyszałem – spróbuj jeszcze raz');
       else if (e.error !== 'aborted') toast('🎤 Mikrofon niedostępny – wpisz tekst');
     };
-    r.onend = () => { const had = rec === r; if (had) rec = null; setMicUi(false); if (had && recText) runAnalysis(); else if (had && !recText) toast('🎤 Nic nie usłyszałem – spróbuj jeszcze raz'); };
+    r.onend = () => finishMic(r);
     try { r.start(); setMicUi(true); } catch { rec = null; setMicUi(false); $('hint').focus(); }
   }
   $('micBtn').onclick = () => startMic();
@@ -1490,7 +1498,7 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
   // ---------- AI: konfiguracja, wiele kluczy, automatyczne przełączanie ----------
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const PROV = { gemini:'Gemini', claude:'Claude' };
-  const AI_DEFAULTS = { fast:true, autoAnalyze:true, fallback:true, provider:'gemini', geminiModel:'gemini-3.6-flash', claudeModel:'claude-haiku-5-5', keys:{ gemini:[], claude:[] } };
+  const AI_DEFAULTS = { fast:true, autoAnalyze:true, fallback:true, provider:'gemini', geminiModel:'gemini-flash-lite-latest', claudeModel:'claude-haiku-5-5', keys:{ gemini:[], claude:[] } };
   const newId = () => Math.random().toString(36).slice(2, 9);
   function aiCfg(){
     let c;
@@ -1547,6 +1555,13 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     return new ApiErr(`${who}: błąd ${st}. ${msg}`, 'other');
   }
 
+  function thinkOptions(model){
+    const m = model.match(/gemini-(\d+(?:\.\d+)?)/), ver = m ? parseFloat(m[1]) : 0;
+    if (ver >= 3) return [{ thinkingLevel:'minimal' }, { thinkingLevel:'low' }, null];
+    if (ver >= 2) return /pro/.test(model) ? [{ thinkingBudget:128 }, null] : [{ thinkingBudget:0 }, null];
+    return [{ thinkingLevel:'minimal' }, { thinkingBudget:0 }, null]; // np. gemini-flash-latest
+  }
+
   async function callProvider(prov, key, cfg, prompt, b64, signal){
     if (prov === 'claude') {
       const content = [];
@@ -1555,107 +1570,126 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', signal,
         headers:{ 'content-type':'application/json', 'x-api-key':key.trim(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-        body: JSON.stringify({ model:(cfg.claudeModel || AI_DEFAULTS.claudeModel).trim(), max_tokens: 4096, messages:[{ role:'user', content }] })
+        body: JSON.stringify({ model:(cfg.claudeModel || AI_DEFAULTS.claudeModel).trim(), max_tokens: 2000, messages:[{ role:'user', content }] })
       });
       if (!resp.ok) throw await classify(resp, 'Claude');
       const j = await resp.json();
-      const out = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
-      if (!out.trim()) throw new ApiErr('Claude: pusta odpowiedź.', 'overload');
-      return out;
+      return (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
     }
     const parts = [];
     if (b64) parts.push({ inline_data:{ mime_type:'image/jpeg', data:b64 } });
     parts.push({ text:prompt });
     const model = (cfg.geminiModel || AI_DEFAULTS.geminiModel).trim().replace(/^models\//,'');
-    // Jak najmniej „myślenia” = szybsza odpowiedź. Gemini 3: thinkingLevel; Gemini 2.5: thinkingBudget.
-    const THINK = { minimal:{ thinkingLevel:'minimal' }, low:{ thinkingLevel:'low' }, budget0:{ thinkingBudget:0 }, none:null };
-    const call = (lv) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    const call = (think) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method:'POST', signal,
       headers:{ 'content-type':'application/json', 'x-goog-api-key':key.trim() },
       body: JSON.stringify({ contents:[{ role:'user', parts }], generationConfig: Object.assign(
-        { temperature:0.2, responseMimeType:'application/json', maxOutputTokens:8192 },
-        THINK[lv] ? { thinkingConfig:THINK[lv] } : {}) })
+        { temperature:0.2, responseMimeType:'application/json', maxOutputTokens:4096 },
+        think ? { thinkingConfig:think } : {}) })
     });
-    const remembered = cfg.thinkCfg && cfg.thinkCfg[model];
-    const levels = remembered && remembered in THINK ? [remembered] : ['minimal', 'low', 'budget0', 'none'];
+    // Jak najmniej „myślenia” = szybsza odpowiedź.
+    // Gemini 3.x: thinkingLevel; Gemini 2.x: thinkingBudget (0 = bez myślenia). Gdy model odrzuci ustawienie – próbuj kolejnego.
+    const remembered = cfg.think2 && cfg.think2[model];
+    const levels = remembered !== undefined ? [remembered] : thinkOptions(model);
     let resp;
     for (let li = 0; li < levels.length; li++) {
       resp = await call(levels[li]);
-      if (resp.ok || resp.status !== 400) { if (resp.ok && !remembered) { const c2 = aiCfg(); c2.thinkCfg = Object.assign({}, c2.thinkCfg, { [model]: levels[li] }); saveAiCfg(c2); } break; }
+      if (resp.ok || resp.status !== 400) { if (resp.ok && remembered === undefined) { const c2 = aiCfg(); c2.think2 = Object.assign({}, c2.think2, { [model]: levels[li] }); saveAiCfg(c2); } break; }
       const t = await resp.clone().text();
-      if (!/think/i.test(t)) break;
+      if (!/thinking/i.test(t)) break;
     }
     if (!resp.ok) throw await classify(resp, 'Gemini');
     const j = await resp.json();
     const c = j.candidates && j.candidates[0];
-    if (c && !c.content && c.finishReason === 'MAX_TOKENS') throw new ApiErr('Gemini: odpowiedź ucięta – spróbuj ponownie.', 'overload');
-    if (!c || !c.content) throw new ApiErr('Gemini: pusta odpowiedź' + (j.promptFeedback && j.promptFeedback.blockReason ? ' (zablokowano: ' + j.promptFeedback.blockReason + ')' : '') + '.', 'other');
-    return (c.content.parts || []).map(p => p.text || '').join('');
+    if (!c || !c.content) throw new ApiErr('Gemini: pusta odpowiedź' + (j.promptFeedback && j.promptFeedback.blockReason ? ' (zablokowano: ' + j.promptFeedback.blockReason + ')' : c && c.finishReason ? ' (' + c.finishReason + ')' : '') + '.', 'other');
+    const out = (c.content.parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
+    if (!out.trim()) throw new ApiErr('Gemini: pusta odpowiedź' + (c.finishReason ? ' (' + c.finishReason + ')' : '') + '.', 'other');
+    return out;
   }
 
   // Próbuje kolejnych kluczy (i ewentualnie drugiego dostawcy), aż któryś zadziała.
 
 
-  // Kolejno: klucze Gemini, potem Claude. Po limicie – następny klucz.
-  // BEZ limitu czasu: czekamy na odpowiedź AI, dopóki użytkownik sam nie przerwie (⏹ Przerwij / zamknięcie okna).
-  // Gdy serwer jest przeciążony (503/500/529) – ponawiamy z rosnącą przerwą.
-  const OVERLOAD_RETRIES = 4;
-  function sleep(ms, signal){
-    return new Promise((res, rej) => {
-      if (signal && signal.aborted) return rej(new DOMException('Przerwano', 'AbortError'));
-      const t = setTimeout(res, ms);
-      if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Przerwano', 'AbortError')); }, { once:true });
-    });
+  // Kolejno: wszystkie klucze Gemini, potem Claude. Po limicie – następny klucz.
+  // Kolejno: klucze Gemini, potem Claude. Po limicie – następny klucz; gdy model długo milczy – szybszy model.
+  const TIMEOUT_IMG = 60000, TIMEOUT_TXT = 45000;
+  // Dziennik ostatnich zapytań AI (do diagnozy, tylko na telefonie).
+  function aiLog(entry){
+    try {
+      const l = JSON.parse(localStorage.getItem('talerz:ai-log') || '[]');
+      l.unshift(Object.assign({ at:Date.now() }, entry));
+      localStorage.setItem('talerz:ai-log', JSON.stringify(l.slice(0, 15)));
+    } catch {}
   }
-  async function askWithRotation(prompt, b64, signal, onStatus){
+  function withTimeout(signal, ms){
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(new DOMException('timeout', 'TimeoutError')), ms);
+    if (signal) { if (signal.aborted) c.abort(signal.reason); else signal.addEventListener('abort', () => c.abort(signal.reason), { once:true }); }
+    return { signal:c.signal, done:() => clearTimeout(t), isTimeout:() => c.signal.aborted && !(signal && signal.aborted) };
+  }
+  async function askWithRotation(prompt, b64, signal, onSwitch){
     const notes = []; let nextFree = Infinity, lastErr = null, tried = 0;
+    const limitMs = b64 ? TIMEOUT_IMG : TIMEOUT_TXT;
     for (const prov of ['gemini', 'claude']) {
       const list = aiCfg().keys[prov];
       for (let i = 0; i < list.length; i++) {
         const k = list[i];
         if (!isUsable(k)) { if (k.until) nextFree = Math.min(nextFree, k.until); continue; }
         tried++;
-        let modelRetried = false, overloads = 0, useLite = false;
-        while (true) {
-          if (signal && signal.aborted) throw new DOMException('Przerwano', 'AbortError');
-          const cfg = aiCfg();
-          if (useLite && cfg.geminiLite) cfg.geminiModel = cfg.geminiLite;
+        // Gemini: najpierw model główny (Flash-Lite – szybki, duży darmowy limit), potem zapasowy (Flash).
+        // Limity Google są liczone osobno dla każdego modelu, więc limit jednego modelu nie blokuje klucza.
+        const cfg0 = aiCfg(), mu = cfg0.modelUntil || {};
+        const chain = prov === 'gemini' ? [cfg0.geminiModel, cfg0.geminiAlt].filter((m, j, a) => m && a.indexOf(m) === j) : [cfg0.claudeModel];
+        let mi = chain.findIndex(m => !(mu[m] > Date.now())); if (mi < 0) mi = chain.length;
+        let repicked = false, keyUntil = 0;
+        while (mi < chain.length) {
+          const cfg = aiCfg(), model = chain[mi];
+          if (prov === 'gemini') cfg.geminiModel = model; else cfg.claudeModel = model;
+          const tw = withTimeout(signal, limitMs), ts = performance.now();
+          const ms = () => Math.round(performance.now() - ts);
           try {
-            const text = await callProvider(prov, k.key, cfg, prompt, b64, signal);
+            const text = await callProvider(prov, k.key, cfg, prompt, b64, tw.signal);
+            tw.done();
+            aiLog({ prov, model, ok:true, ms:ms(), img:!!b64 });
             const today = todayKey();
             markKey(prov, k.id, { state:'ok', until:0, note:'', usedDay:today, used:(k.usedDay === today ? (k.used || 0) : 0) + 1, lastOk:Date.now() });
             return { text, prov, key:k, idx:i, notes };
           } catch (e) {
-            if ((e && e.name === 'AbortError') || (signal && signal.aborted)) throw new DOMException('Przerwano', 'AbortError');
+            tw.done();
+            if (e && e.name === 'AbortError' && !tw.isTimeout()) throw e;
+            aiLog({ prov, model, ok:false, ms:ms(), img:!!b64, msg: tw.isTimeout() ? `brak odpowiedzi po ${Math.round(limitMs/1000)} s` : String(e && e.message || e) });
+            if (tw.isTimeout()) {
+              lastErr = new ApiErr(`${PROV[prov]}: brak odpowiedzi po ${Math.round(limitMs/1000)} s.`, 'overload'); notes.push('timeout');
+              mi++; if (mi < chain.length && onSwitch) onSwitch('⚡ inny model…'); continue;
+            }
             lastErr = e;
-            const kind = (e && e.kind) || 'net';
-            if (kind === 'model' && !modelRetried) { modelRetried = true; await pickModel(prov, k.key, true); continue; }
-            if (kind === 'overload' || kind === 'net') {
-              overloads++;
-              if (overloads <= OVERLOAD_RETRIES) {
-                const wait = Math.min(15000, 2000 * Math.pow(2, overloads - 1));
-                if (onStatus) onStatus(`⏳ ${PROV[prov]} zajęty – ponawiam (${overloads}/${OVERLOAD_RETRIES})…`);
-                await sleep(wait, signal);
-                if (overloads === 2 && prov === 'gemini' && aiCfg().geminiLite) { useLite = true; if (onStatus) onStatus('⚡ próbuję szybszego modelu…'); }
-                continue;
-              }
-              notes.push('overload'); break;   // następny klucz / dostawca
+            const kind = e.kind || 'other';
+            if (kind === 'model' && !repicked) { repicked = true; await pickModel(prov, k.key, true); const c4 = aiCfg(); chain.splice(0, chain.length, ...(prov === 'gemini' ? [c4.geminiModel, c4.geminiAlt].filter((m, j, a) => m && a.indexOf(m) === j) : [c4.claudeModel])); mi = 0; continue; }
+            if (kind === 'limit') {
+              const until = Date.now() + e.retryMs;
+              const c5 = aiCfg(); c5.modelUntil = Object.assign({}, c5.modelUntil, { [model]:until }); saveAiCfg(c5);
+              keyUntil = keyUntil ? Math.min(keyUntil, until) : until; notes.push(kind);
+              mi++; if (mi < chain.length && onSwitch) onSwitch('⚡ inny model…'); continue;
             }
-            if (kind === 'limit' || kind === 'credit') {
-              const until = Date.now() + e.retryMs; nextFree = Math.min(nextFree, until);
-              markKey(prov, k.id, { state:kind, until, note:e.message }); notes.push(kind);
-              if (onStatus) onStatus('🔑 następny klucz…');
-              break;
-            }
-            if (kind === 'invalid') { markKey(prov, k.id, { state:'invalid', until:0, note:e.message }); notes.push(kind); break; }
-            throw e;
+            if (kind === 'credit') { const until = Date.now() + e.retryMs; nextFree = Math.min(nextFree, until); markKey(prov, k.id, { state:kind, until, note:e.message }); notes.push(kind); }
+            else if (kind === 'invalid') { markKey(prov, k.id, { state:'invalid', until:0, note:e.message }); notes.push(kind); }
+            mi++; continue; // inne błędy: spróbuj kolejnego modelu, potem klucza
           }
         }
+        // wszystkie modele tego klucza mają limit → klucz odpoczywa do najbliższego odnowienia
+        const lims = chain.map(m => (aiCfg().modelUntil || {})[m] || 0);
+        if (chain.length && lims.every(u => u > Date.now())) { const u = Math.min(...lims); nextFree = Math.min(nextFree, u); markKey(prov, k.id, { state:'limit', until:u, note:lastErr && lastErr.message }); }
+        if (lastErr && lastErr.kind === 'overload') break;   // ten sam serwer – spróbuj drugiego dostawcy
       }
     }
     if (!tried && nextFree === Infinity) throw new Error('Brak działającego klucza AI – sprawdź w Profilu.');
-    const k = lastErr && lastErr.kind;
-    throw new Error((k === 'overload' || k === 'net' ? 'Serwery AI są teraz przeciążone lub brak internetu – spróbuj za chwilę.' : k === 'invalid' ? 'Klucz AI nieprawidłowy – sprawdź w Profilu.' : 'Limit kluczy AI wyczerpany.') + (nextFree < Infinity ? ` Wróci ok. ${hhmm(nextFree)}.` : ''));
+    const kind = lastErr && lastErr.kind;
+    const head = kind === 'overload' ? 'AI odpowiada zbyt wolno – spróbuj ponownie albo wpisz ręcznie.'
+      : kind === 'invalid' ? 'Klucz AI jest nieprawidłowy – sprawdź go w Profilu (⟳).'
+      : kind === 'credit' ? 'Brak środków na koncie Claude API.'
+      : kind === 'limit' ? 'Limit kluczy AI wyczerpany.'
+      : 'Nie udało się połączyć z AI.';
+    throw new Error(head + (lastErr && kind !== 'limit' ? ` (${lastErr.message})` : '') + (nextFree < Infinity ? ` Wróci ok. ${hhmm(nextFree)}.` : ''));
   }
 
   async function listModels(provider, key){
@@ -1674,10 +1708,10 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
   }
 
 
-  // Automatyczny wybór modelu: najnowszy stabilny Flash (Gemini) / Haiku (Claude)
+  // Automatyczny wybór modelu: Flash-Lite + zapasowy Flash (Gemini) / Haiku (Claude)
   async function pickModel(prov, key, force){
     const c = aiCfg();
-    if (!force && c.modelPicked && c.modelPicked[prov]) return;
+    if (!force && c.modelPicked2 && c.modelPicked2[prov]) return;
     try {
       const ms = (await listModels(prov, key)).map(m => m.id);
       let best = null;
@@ -1686,12 +1720,14 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
         const stable = ms.filter(id => /flash/.test(id) && !/lite|preview|exp|thinking|8b/.test(id));
         const pool = stable.length ? stable : ms.filter(id => /flash/.test(id));
         best = pool.sort((a, b) => ver(b) - ver(a) || a.length - b.length)[0];
-        const lites = ms.filter(id => /flash-lite/.test(id) && !/preview|exp/.test(id)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
-        const c3 = aiCfg(); c3.geminiLite = lites[0] || null; saveAiCfg(c3);
+        const lites = ms.filter(id => /flash-lite/.test(id) && !/preview|exp|latest/.test(id)).sort((a, b) => ver(b) - ver(a) || a.length - b.length);
+        // główny: najnowszy stabilny Flash-Lite (szybki, większy darmowy limit); zapasowy: Flash
+        if (lites[0]) { const c3 = aiCfg(); c3.geminiAlt = best && best !== lites[0] ? best : null; saveAiCfg(c3); best = lites[0]; }
+        else { const c3 = aiCfg(); c3.geminiAlt = null; saveAiCfg(c3); }
       } else {
         best = ms.find(id => /haiku/.test(id)) || ms.find(id => /sonnet/.test(id)) || ms[0];
       }
-      if (best) { const c2 = aiCfg(); c2[prov === 'gemini' ? 'geminiModel' : 'claudeModel'] = best; c2.modelPicked = Object.assign({}, c2.modelPicked, { [prov]:true }); saveAiCfg(c2); }
+      if (best) { const c2 = aiCfg(); c2[prov === 'gemini' ? 'geminiModel' : 'claudeModel'] = best; c2.modelPicked2 = Object.assign({}, c2.modelPicked2, { [prov]:true }); saveAiCfg(c2); }
     } catch {}
   }
 
@@ -1749,7 +1785,43 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     const c = aiCfg(); const n = c.keys.gemini.length + c.keys.claude.length;
     $('aiActive').textContent = n ? '' : '📸 Dodaj klucz, aby liczyć kalorie ze zdjęć.';
   }
-  function fillAi(){ renderKeys('gemini'); renderKeys('claude'); aiSummary(); }
+  function renderAiLog(){
+    let l = []; try { l = JSON.parse(localStorage.getItem('talerz:ai-log') || '[]'); } catch {}
+    $('aiLogBox').innerHTML = l.length ? l.map(x => {
+      const d = new Date(x.at);
+      return `<div style="padding:3px 0;border-top:1px solid var(--line)">${pad(d.getHours())}:${pad(d.getMinutes())} ${x.ok ? '✓' : '✗'} ${esc(x.prov ? PROV[x.prov] : '')} ${esc(x.model || '')}${x.img ? ' 📷' : ''}${x.ms ? ' · ' + fmt1(x.ms / 1000) + ' s' : ''}${x.msg ? '<br><span style="color:var(--warn)">' + esc(x.msg) + '</span>' : ''}</div>`;
+    }).join('') : 'Brak wpisów.';
+  }
+  // Test każdego klucza: krótkie zapytanie tekstowe, czas i dokładny błąd.
+  $('aiDiag').onclick = async () => {
+    const out = $('aiDiagOut'), c = aiCfg(), rows = [];
+    if (!hasAnyKey(c)) { out.textContent = '🔑 Najpierw dodaj klucz.'; return; }
+    $('aiDiag').disabled = true;
+    const draw = () => out.innerHTML = rows.join('');
+    if (!navigator.onLine) rows.push('<div class="status-err">📵 Telefon jest offline.</div>');
+    for (const prov of ['gemini', 'claude']) for (const [i, k] of c.keys[prov].entries()) {
+      const idx = rows.push(`<div><span class="spinner" style="width:12px;height:12px;border-width:2px"></span> ${PROV[prov]} ${keyName(k, i)}…</div>`) - 1; draw();
+      const t0 = performance.now(), tw = withTimeout(null, 45000);
+      try {
+        await pickModel(prov, k.key, true);
+        const cfg = aiCfg(), model = prov === 'gemini' ? cfg.geminiModel : cfg.claudeModel;
+        parseJson(await callProvider(prov, k.key, cfg, 'Odpowiedz wyłącznie JSON-em: {"ok":true}', null, tw.signal));
+        const s = fmt1((performance.now() - t0) / 1000);
+        markKey(prov, k.id, { state:'ok', until:0, note:'', lastOk:Date.now() });
+        rows[idx] = `<div class="status-ok">✓ ${PROV[prov]} ${keyName(k, i)} · ${esc(model)} · ${s} s</div>`;
+        aiLog({ prov, model, ok:true, ms:performance.now() - t0, msg:'test' });
+      } catch (e) {
+        const msg = tw.isTimeout() ? 'brak odpowiedzi po 45 s' : (e && e.message) || String(e);
+        const kind = e && e.kind;
+        if (kind === 'invalid') markKey(prov, k.id, { state:'invalid', until:0 });
+        rows[idx] = `<div class="status-err">✗ ${PROV[prov]} ${keyName(k, i)}: ${esc(msg)}</div>`;
+        aiLog({ prov, ok:false, ms:performance.now() - t0, msg:'test: ' + msg });
+      } finally { tw.done(); }
+      draw();
+    }
+    $('aiDiag').disabled = false; renderKeys('gemini'); renderKeys('claude'); renderAiLog();
+  };
+  function fillAi(){ renderKeys('gemini'); renderKeys('claude'); aiSummary(); renderAiLog(); }
   ['gemini','claude'].forEach(prov => {
     $(PX[prov] + 'KeyAdd').onclick = () => addKey(prov);
     $(PX[prov] + 'KeyNew').addEventListener('keydown', e => { if (e.key === 'Enter') addKey(prov); });
@@ -2023,8 +2095,8 @@ Jeśli opis nie dotyczy jedzenia: {"meal_name":"","items":[],"confidence":"niska
     showTab(profile ? 'today' : 'profile');
     handleShortcut();
     const c = aiCfg();
-    if (c.keys.gemini[0] && !(c.modelPicked || {}).gemini) pickModel('gemini', c.keys.gemini[0].key);
-    if (c.keys.claude[0] && !(c.modelPicked || {}).claude) pickModel('claude', c.keys.claude[0].key);
+    if (c.keys.gemini[0] && !(c.modelPicked2 || {}).gemini) pickModel('gemini', c.keys.gemini[0].key);
+    if (c.keys.claude[0] && !(c.modelPicked2 || {}).claude) pickModel('claude', c.keys.claude[0].key);
   })();
 })();
 </script>
