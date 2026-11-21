@@ -7,7 +7,10 @@
 <meta name="description" content="Licznik kalorii ze zdjęć posiłków i dzienny limit na odchudzanie liczony z kroków.">
 <meta name="theme-color" content="#2F7D5B">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -334,6 +337,7 @@
   #micBtn.rec .pi{animation:micpulse 1s ease-in-out infinite}
   @keyframes micpulse{50%{transform:scale(1.18)}}
   .slowbox{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .ksteps{font-size:12px;color:var(--muted);margin:0 0 6px}
   .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.on{opacity:1}
 </style>
@@ -529,13 +533,15 @@
     <div class="card">
       <h2>📸 Rozpoznawanie zdjęć</h2>
       <div class="prov">
-        <div class="provhead"><b>Gemini</b><span class="pill">darmowy</span><a class="keylink" href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener">🔑 Utwórz klucz ↗</a></div>
+        <div class="provhead"><b>Gemini</b><span class="pill">darmowy</span><a class="keylink" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Faistudio.google.com%2Fapp%2Fapikey" target="_blank" rel="noopener">🔑 Utwórz klucz ↗</a></div>
         <div class="keylist" id="gKeys"></div>
+        <div class="ksteps">👤 Zaloguj → <b>Create API key</b> → 📋 Kopiuj → wklej tutaj</div>
         <div class="keyrow"><input id="gKeyNew" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej klucz AQ.… / AIza…"><button class="btn" id="gKeyAdd" aria-label="Dodaj klucz">＋</button></div>
       </div>
       <div class="prov">
         <div class="provhead"><b>Claude</b><span class="pill low">płatny</span><a class="keylink" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">🔑 Utwórz klucz ↗</a></div>
         <div class="keylist" id="cKeys"></div>
+        <div class="ksteps">👤 Zaloguj → <b>Create Key</b> → 📋 Kopiuj → wklej tutaj</div>
         <div class="keyrow"><input id="cKeyNew" type="password" autocomplete="off" spellcheck="false" placeholder="Wklej klucz sk-ant-…"><button class="btn" id="cKeyAdd" aria-label="Dodaj klucz">＋</button></div>
       </div>
       <div class="small muted" id="aiActive"></div>
@@ -577,7 +583,7 @@
   </section>
 </div>
 
-<div class="fabs hidden" id="fab"><button class="fab2" id="fabMic" aria-label="Powiedz, co jesz">🎤</button><button class="fab2 main" id="fabAdd" aria-label="Dodaj posiłek">＋ Posiłek</button></div>
+<div class="fabs hidden" id="fab"><button class="fab2 main" id="fabAdd" aria-label="Dodaj posiłek">＋ Posiłek</button></div>
 
 <nav class="tabs"><div class="in">
   <button data-tab="today" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='5'/></svg>Dziś</button>
@@ -634,7 +640,7 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const APP_VERSION = '12';
+  const APP_VERSION = '13';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -1073,7 +1079,6 @@
   }
   function closeSheet(){ if (aiAbort) aiAbort.abort(); stopMic(true); $('sheetBg').classList.remove('open'); }
   $('fabAdd').onclick = () => openSheet();
-  $('fabMic').onclick = () => { openSheet(); startMic(); };
   $('closeSheet').onclick = closeSheet;
   $('sheetBg').addEventListener('click', e => { if (e.target === $('sheetBg')) closeSheet(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheet(); $('drinkSheetBg').classList.remove('open'); } });
