@@ -130,6 +130,8 @@
   .spinner{width:18px;height:18px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite;display:inline-block;vertical-align:middle}
   @keyframes sp{to{transform:rotate(360deg)}}
   .hist{display:grid;gap:8px}
+  .wentries{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .wentry{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:3px 0}
   .hrow{display:grid;grid-template-columns:92px 1fr 90px;gap:10px;align-items:center;font-size:14px;cursor:pointer}
   .hbar{height:10px;border-radius:6px;background:var(--line);position:relative;overflow:hidden}
   .hbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
@@ -956,6 +958,17 @@
     const weeks = toLose && profile.rate ? Math.ceil(toLose / profile.rate) : 0;
     box.innerHTML = `<span class="chip ok">✓ Zapisano</span><span class="chip">BMI ${fmt1(c.bmi)}</span><span class="chip">🎯 ${fmt(c.limit)} kcal + ruch</span>` + (weeks ? `<span class="chip">⏳ ~${weeks} tyg. do celu</span>` : '');
   }
+  // Wpis wagi na dziś z godziną dodania; jeśli waga się nie zmieniła, zachowuje pierwotny czas.
+  function upsertWeight(list, date, kg){
+    const old = (list || []).find(w => w.date === date);
+    const at = old && old.kg === kg && old.at ? old.at : Date.now();
+    return (list || []).filter(w => w.date !== date).concat({ date, kg, at });
+  }
+  function weightWhen(w){
+    const d = w.at ? new Date(w.at) : parseKey(w.date);
+    const ds = w.date === todayKey() ? 'Dziś' : d.toLocaleDateString('pl-PL', { weekday:'short', day:'numeric', month:'numeric', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+    return w.at ? ds + ', ' + d.toLocaleTimeString('pl-PL', { hour:'2-digit', minute:'2-digit' }) : ds;
+  }
   let profT;
   function profileChanged(){
     clearTimeout(profT);
@@ -967,7 +980,7 @@
         Object.assign(p, { age, height, weight });
         if (!p.startWeight) p.startWeight = weight;
         const tk = todayKey();
-        p.weights = (p.weights || []).filter(w => w.date !== tk).concat({ date:tk, kg:weight });
+        p.weights = upsertWeight(p.weights, tk, weight);
       }
       if (!valid && !profile) { profileInfo(); return; }
       profile = p; await save('profile', profile);
@@ -1043,7 +1056,9 @@
   function renderWeight(){
     const ws = (profile && profile.weights || []).slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);
     const box = $('weightChart');
-    if (ws.length < 2) { box.innerHTML = ws.length ? `<div class="small muted">⚖️ ${fmt1(ws[0].kg)} kg</div>` : ''; return; }
+    const list = ws.slice(-5).reverse().map(w => `<div class="wentry"><span class="muted">${weightWhen(w)}</span><b>${fmt1(w.kg)} kg</b></div>`).join('');
+    const entries = ws.length ? `<div class="wentries"><div class="small muted" style="font-weight:700;margin-bottom:2px">Ostatnie wpisy</div>${list}</div>` : '';
+    if (ws.length < 2) { box.innerHTML = entries; return; }
     const W = 520, H = 170, P = 30;
     const min = Math.min(...ws.map(w=>w.kg), profile.goal || Infinity) - 0.5, max = Math.max(...ws.map(w=>w.kg)) + 0.5;
     const t0 = parseKey(ws[0].date).getTime(), t1 = parseKey(ws[ws.length-1].date).getTime() || t0 + 1;
@@ -1054,16 +1069,16 @@
     const last = ws[ws.length-1].kg, diff = r1(last - ws[0].kg);
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${goalLine}
       <polyline points="${pts}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
-      ${ws.map(w=>`<circle cx="${x(w.date)}" cy="${y(w.kg)}" r="3.5" fill="var(--ink)"/>`).join('')}
+      ${ws.map(w=>`<circle cx="${x(w.date)}" cy="${y(w.kg)}" r="3.5" fill="var(--ink)"><title>${weightWhen(w)}: ${fmt1(w.kg)} kg</title></circle>`).join('')}
       <text x="${x(ws[ws.length-1].date)}" y="${y(last)-8}" text-anchor="end" font-size="19" font-weight="700" fill="var(--ink)">${fmt1(last)} kg</text></svg>
-      <div class="small" style="color:${diff<=0?'var(--accent)':'var(--warn)'};font-weight:700">${diff>0?'+':''}${fmt1(diff)} kg</div>`;
+      <div class="small" style="color:${diff<=0?'var(--accent)':'var(--warn)'};font-weight:700">${diff>0?'+':''}${fmt1(diff)} kg</div>${entries}`;
   }
   $('saveWeight').onclick = async () => {
     const kg = r1($('wToday').value);
     if (!kg || kg < 30) { toast('⚖️ Wpisz wagę'); return; }
     if (!profile) { showTab('profile'); return; }
     const tk = todayKey();
-    profile.weights = (profile.weights || []).filter(w => w.date !== tk).concat({date:tk, kg});
+    profile.weights = upsertWeight(profile.weights, tk, kg);
     profile.weight = kg; if (!profile.startWeight) profile.startWeight = kg;
     await save('profile', profile);
     $('wToday').value = ''; renderWeight(); toast('✓ ' + fmt1(kg) + ' kg');
