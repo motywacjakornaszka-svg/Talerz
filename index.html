@@ -645,7 +645,7 @@
 <div class="toast" id="toast"></div>
 <script>
 (() => {
-  const APP_VERSION = '16';
+  const APP_VERSION = '17';
   // ---------- narzędzia ----------
   const $ = id => document.getElementById(id);
   const r0 = n => Math.round(Number(n) || 0);
@@ -1053,25 +1053,72 @@
     $('wHistSum').textContent = wDays.length ? `Średnio ${fmt1(wDays.reduce((a,r)=>a+r.v,0)/wDays.length/1000)} l · cel w ${wDays.filter(r=>r.v>=r.g).length} z ${wDays.length} dni` : '';
     renderWeight();
   }
+  let wSel = null; // data wybranego punktu na wykresie wagi
   function renderWeight(){
-    const ws = (profile && profile.weights || []).slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);
+    const all = (profile && profile.weights || []).slice().sort((a,b)=>a.date.localeCompare(b.date));
+    const ws = all.slice(-30);
     const box = $('weightChart');
     const list = ws.slice(-5).reverse().map(w => `<div class="wentry"><span class="muted">${weightWhen(w)}</span><b>${fmt1(w.kg)} kg</b></div>`).join('');
     const entries = ws.length ? `<div class="wentries"><div class="small muted" style="font-weight:700;margin-bottom:2px">Ostatnie wpisy</div>${list}</div>` : '';
-    if (ws.length < 2) { box.innerHTML = entries; return; }
-    const W = 520, H = 170, P = 30;
-    const min = Math.min(...ws.map(w=>w.kg), profile.goal || Infinity) - 0.5, max = Math.max(...ws.map(w=>w.kg)) + 0.5;
-    const t0 = parseKey(ws[0].date).getTime(), t1 = parseKey(ws[ws.length-1].date).getTime() || t0 + 1;
-    const x = d => P + (parseKey(d).getTime() - t0) / Math.max(1, t1 - t0) * (W - 2*P);
-    const y = v => H - P - (v - min) / (max - min) * (H - 2*P);
-    const pts = ws.map(w => `${x(w.date)},${y(w.kg)}`).join(' ');
-    const goalLine = profile.goal && profile.goal > min ? `<line x1="${P}" x2="${W-P}" y1="${y(profile.goal)}" y2="${y(profile.goal)}" stroke="var(--accent)" stroke-dasharray="4 4" opacity=".6"/><text x="${W-P}" y="${y(profile.goal)-4}" text-anchor="end" font-size="17" fill="var(--accent)">🎯 ${fmt1(profile.goal)}</text>` : '';
-    const last = ws[ws.length-1].kg, diff = r1(last - ws[0].kg);
-    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">${goalLine}
-      <polyline points="${pts}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
-      ${ws.map(w=>`<circle cx="${x(w.date)}" cy="${y(w.kg)}" r="3.5" fill="var(--ink)"><title>${weightWhen(w)}: ${fmt1(w.kg)} kg</title></circle>`).join('')}
-      <text x="${x(ws[ws.length-1].date)}" y="${y(last)-8}" text-anchor="end" font-size="19" font-weight="700" fill="var(--ink)">${fmt1(last)} kg</text></svg>
-      <div class="small" style="color:${diff<=0?'var(--accent)':'var(--warn)'};font-weight:700">${diff>0?'+':''}${fmt1(diff)} kg</div>${entries}`;
+    if (!ws.length) { box.innerHTML = '<div class="small muted">Wpisz wagę poniżej – tu pojawi się wykres.</div>'; return; }
+    // oś czasu: dokładna godzina wpisu, a dla starych wpisów bez godziny – południe danego dnia
+    const tOf = w => w.at ? w.at : parseKey(w.date).getTime() + 12*3600e3;
+    const W = 520, H = 230, L = 46, R = 18, T = 16, B = 34;
+    const kgs = ws.map(w => w.kg), goal = profile.goal || null;
+    let min = Math.min(...kgs), max = Math.max(...kgs);
+    if (goal && goal < min && min - goal < 6) min = goal;
+    const span = Math.max(1, max - min);
+    const step = span <= 2.5 ? 0.5 : span <= 5 ? 1 : span <= 12 ? 2 : 5;
+    min = Math.floor((min - span*0.1) / step) * step; max = Math.ceil((max + span*0.1) / step) * step;
+    if (max - min < 2*step) max = min + 2*step;
+    const t0 = tOf(ws[0]), t1 = tOf(ws[ws.length-1]), dt = Math.max(1, t1 - t0);
+    const x = w => ws.length === 1 ? (L + W - R) / 2 : L + (tOf(w) - t0) / dt * (W - L - R);
+    const y = v => T + (max - v) / (max - min) * (H - T - B);
+    // siatka i etykiety osi kg
+    let grid = '';
+    for (let v = min; v <= max + 1e-9; v += step) {
+      grid += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>` +
+              `<text x="${L-6}" y="${y(v)+5}" text-anchor="end" font-size="16" fill="var(--muted)">${fmt1(v)}</text>`;
+    }
+    // etykiety dni na osi X (maks. ok. 5, bez nakładania się)
+    const dayLab = w => { const d = parseKey(w.date); return `${d.getDate()}.${pad(d.getMonth()+1)}`; };
+    let xl = '', lastX = -1e9;
+    const every = Math.max(1, Math.ceil(ws.length / 5));
+    ws.forEach((w, i) => {
+      if (i % every && i !== ws.length - 1) return;
+      const px = x(w); if (px - lastX < 52) return; lastX = px;
+      xl += `<text x="${px}" y="${H-10}" text-anchor="middle" font-size="16" fill="var(--muted)">${dayLab(w)}</text>`;
+    });
+    const goalLine = goal && goal >= min && goal <= max ? `<line x1="${L}" x2="${W-R}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${W-R}" y="${y(goal)-5}" text-anchor="end" font-size="14" font-weight="700" fill="var(--accent)">🎯 ${fmt1(goal)} kg</text>` : '';
+    const pts = ws.map(w => `${x(w)},${y(w.kg)}`).join(' ');
+    const area = ws.length > 1 ? `<polygon points="${x(ws[0])},${H-B} ${pts} ${x(ws[ws.length-1])},${H-B}" fill="var(--accent)" opacity=".10"/>` : '';
+    const sel = ws.find(w => w.date === wSel) || ws[ws.length-1];
+    const si = ws.indexOf(sel), prev = si > 0 ? ws[si-1] : null;
+    const ch = prev ? r1(sel.kg - prev.kg) : null;
+    const total = r1(ws[ws.length-1].kg - ws[0].kg);
+    const col = v => v < 0 ? 'var(--accent)' : v > 0 ? 'var(--warn)' : 'var(--muted)';
+    const sgn = v => (v > 0 ? '+' : '') + fmt1(v);
+    box.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:4px">
+        <div><div class="wbig">${fmt1(sel.kg)} kg</div><div class="small muted">📅 ${weightWhen(sel)}</div></div>
+        <div class="small" style="text-align:right">${ch !== null ? `<div style="color:${col(ch)};font-weight:700">${sgn(ch)} kg od poprz.</div>` : ''}${ws.length > 1 ? `<div class="muted">${sgn(total)} kg w ${ws.length} wpisach</div>` : ''}</div>
+      </div>
+      <svg id="wSvg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Wykres wagi" style="touch-action:pan-y;cursor:pointer;display:block">
+        ${grid}${goalLine}${area}
+        <line x1="${x(sel)}" x2="${x(sel)}" y1="${T}" y2="${H-B}" stroke="var(--muted)" stroke-dasharray="3 4"/>
+        <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        ${ws.map(w => `<circle cx="${x(w)}" cy="${y(w.kg)}" r="${w === sel ? 7 : 4}" fill="${w === sel ? 'var(--accent)' : 'var(--card)'}" stroke="var(--accent)" stroke-width="2.5"><title>${weightWhen(w)}: ${fmt1(w.kg)} kg</title></circle>`).join('')}
+        ${xl}
+      </svg>
+      <div class="muted" style="text-align:center;font-size:12px">👆 Dotknij punktu – waga, dzień i godzina</div>${entries}`;
+    const svg = $('wSvg');
+    const pick = e => {
+      const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W;
+      let best = ws[0]; ws.forEach(w => { if (Math.abs(x(w) - px) < Math.abs(x(best) - px)) best = w; });
+      if (best.date !== sel.date) { wSel = best.date; renderWeight(); }
+    };
+    svg.addEventListener('pointerdown', pick);
+    svg.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) pick(e); });
   }
   $('saveWeight').onclick = async () => {
     const kg = r1($('wToday').value);
@@ -1081,7 +1128,7 @@
     profile.weights = upsertWeight(profile.weights, tk, kg);
     profile.weight = kg; if (!profile.startWeight) profile.startWeight = kg;
     await save('profile', profile);
-    $('wToday').value = ''; renderWeight(); toast('✓ ' + fmt1(kg) + ' kg');
+    $('wToday').value = ''; wSel = null; renderWeight(); toast('✓ ' + fmt1(kg) + ' kg');
     if (dayKey === tk) { await saveDay(); renderToday(); }
   };
 
