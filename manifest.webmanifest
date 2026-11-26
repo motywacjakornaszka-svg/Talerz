@@ -1,30 +1,20 @@
 {
-  "id": "./",
-  "name": "Talerz – licznik kalorii ze zdjęć",
-  "short_name": "Talerz",
-  "description": "Licz kalorie ze zdjęć posiłków, pilnuj dziennego limitu na odchudzanie (z kroków) i regularnego picia płynów.",
+  "name": "Nawyki i Talerz",
+  "short_name": "Nawyki",
+  "description": "Nawyki, pamiętnik, cele, licznik kalorii ze zdjęć i mentor AI w jednej aplikacji",
   "lang": "pl",
-  "dir": "ltr",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait",
-  "background_color": "#F5F3EE",
-  "theme_color": "#2F7D5B",
-  "categories": ["health", "fitness", "food", "lifestyle"],
-  "prefer_related_applications": false,
+  "background_color": "#f6f4ef",
+  "theme_color": "#2e7d5b",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "screenshots": [
-    { "src": "screenshot-dzis.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Dzienny limit kalorii, makro i płyny" },
-    { "src": "screenshot-plyny.png", "sizes": "720x1560", "type": "image/png", "form_factor": "narrow", "label": "Pasek tempa picia i seria dni w limicie" }
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
   ],
   "shortcuts": [
-    { "name": "Dodaj posiłek", "short_name": "Posiłek", "url": "./?akcja=posilek", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "Dodaj wodę", "short_name": "Woda", "url": "./?akcja=woda", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+    {"name": "Dodaj posiłek", "short_name": "Posiłek", "url": "./?akcja=posilek", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]},
+    {"name": "Dodaj wodę", "short_name": "Woda", "url": "./?akcja=woda", "icons": [{"src": "icon-192.png", "sizes": "192x192"}]}
   ]
 }

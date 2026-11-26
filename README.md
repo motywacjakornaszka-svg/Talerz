@@ -1,195 +1,63 @@
-# Talerz 🍽️ – licznik kalorii ze zdjęć
+# Nawyki i Talerz 4.2
 
-Prosta aplikacja na telefon (PWA). Robi dwie rzeczy:
+Elastyczne nawyki (Mini / Plus / Elita, pamiętnik, cele, projekty, mentor AI) i Talerz (licznik kalorii ze zdjęć, płyny, kroki, waga) w jednej aplikacji.
 
-1. **Liczy kalorie ze zdjęcia posiłku.** Zdjęcie analizuje AI: Google Gemini albo Claude, z Twoim własnym kluczem API. Rozpoznane składniki i gramatury możesz poprawić.
-2. **Liczy dzienny limit kalorii na odchudzanie.** Bierze pod uwagę płeć, wiek, wzrost, wagę, liczbę kroków i trening.
+## Co daje połączenie
+- **Zakładka 🍽️ Jedzenie**: cały Talerz z podzakładkami Dziś, Historia i Profil.
+- **Nawyki ⚡ zaliczają się same** z danych Jedzenia. Na start:
+  - „Wypicie 2 litrów wody”: płyny 1000 / 1500 / 2000 ml;
+  - „Owoc i warzywo”: 100 / 250 / 400 g;
+  - „Spacer (kroki)”: 4000 / 7000 / 10 000 kroków;
+  - „Szklanka wody rano / białko”: 50 / 75 / 100% dziennej normy białka.
+  W „✏️ Edytuj nawyki” możesz zmienić progi albo podpiąć inny nawyk do: wody, warzyw, kroków, cukrów wolnych lub „jedzenie zapisane i w limicie”. Nawyk zawsze możesz też zaznaczyć ręcznie, a liczy się wyższy z dwóch poziomów.
+- **Karta Jedzenia na ekranie Dziś**: kalorie / limit, płyny, warzywa i kroki, z szybkimi przyciskami 📷 Posiłek, 💧 Woda i 👟 Kroki. Posiłek i wodę dodasz też przyciskiem ＋.
+- **Mentor AI widzi jedzenie, płyny, kroki i wagę.** Możesz to wyłączyć w Ustawieniach → Prywatność.
+- **Postęp**: karta „Jedzenie – ostatnie 7 dni” (dni w limicie, cel płynów, warzywa, kroki, zmiana wagi).
+- **Wspólne klucze AI** (Gemini i Claude): klucz dodany w jednym miejscu działa w obu częściach.
+- **Kopia zapasowa** (Więcej → Kopie i dane) zawiera także dane Jedzenia.
 
-Aplikacja nie ma serwera ani konta. Wszystkie dane (posiłki, waga, klucze API) zostają **tylko na Twoim telefonie**.
+## Nowości w 4.2: zakładka Mentor
+- **Wszystkie rozmowy z AI są w zakładce Mentor.** Pozostałe zakładki pokazują same fakty. Przyciski „🧭 Omów z mentorem” (pamiętnik), „🧭 Co zjeść jutro?” (wieczorny bilans) i „🧭 Zapisz i zapytaj mentora o zdjęcie” (wpis) przenoszą do Mentora i tam zadają pytanie. Wcześniejsze odpowiedzi AI z pamiętnika są w archiwum rozmów.
+- **Pole pytania jest na górze.** Zaraz pod nim widać „Mentor myśli…”, a potem dzisiejszą rozmowę, z najnowszą wymianą u góry.
+- **Rozmowy z poprzednich dni trafiają do zwiniętego „🗂️ Archiwum rozmów”**, podzielonego na dni.
+- **Naprawiony błąd:** po odpowiedzi mentora przycisk „Wyślij” zostawał nieaktywny. Tekst wpisany w trakcie czekania już nie znika.
+- **🔊 Czytanie na głos.** Gdy pytanie jest podyktowane (🎤), mentor czyta odpowiedź, żeńskim głosem, jeśli telefon taki ma. Przy każdej odpowiedzi jest 🔊 (przeczytaj) i 📋 (kopiuj). Tryb (gdy pytam głosem, zawsze, nigdy), głos i tempo ustawisz w Ustawienia → Mentor AI.
+- Gdy odpowiedź nie przyjdzie (np. brak internetu), pojawia się przycisk „Ponów”.
 
----
+## Nowości w 4.1
+- **⚡ Szybko dodaj posiłek**: w „＋ Posiłek” na górze są ⭐ ulubione i posiłki, które jesz często, z wyborem porcji (½, 1, 1½, 2). Gwiazdka ☆ przy posiłku na liście dodaje go do ulubionych.
+- **Napoje w kaloriach**: przy „Zjedzone” widać, ile kalorii pochodzi z napojów. Napoje zawsze się wliczały, teraz jest to widoczne.
+- **Trend wagi**: średnia z 7 dni (przerywana linia na wykresie), tempo w kg na tydzień i przewidywany czas do celu.
+- **Nawyk ⚡ białko**: „Szklanka wody rano / białko” zalicza się sam: 50 / 75 / 100% dziennej normy białka.
+- **🌆 Wieczorny bilans o 18:00**: karta na ekranie Dziś i powiadomienie. Pokazuje, ile zostało kalorii, ile brakuje płynów, warzyw, białka i kroków oraz które serie warto chronić.
+- **🔥 Ochrona serii o 21:00**: przypomnienie, gdy nawyk z serią 3+ dni nie jest jeszcze dziś zaliczony.
+- **🎯 Cel żywieniowy tygodnia**: jeden cel (np. 400 g warzyw przez 5 dni), liczony sam z danych Jedzenia.
+- **🧭 Co zjeść jutro?**: mentor analizuje posiłki z ostatnich dni i proponuje jadłospis z listą zakupów.
+- **🧠 Podpowiedź mentora w pamiętniku**: analiza odpowiedzi na pytania dnia pod kątem zdrowego myślenia. Przegląd tygodnia ma też sekcje o jedzeniu i myśleniu.
+- **Moduły**: post przerywany, rytm dnia i projekty są ukryte. Włączysz je w Ustawienia → 🧩 Moduły, a ich dane zostają.
+- Przypomnienia (bilans, serie, pamiętnik, eksport do kalendarza) są teraz w Ustawienia → 🔔 Przypomnienia.
 
-## Jak liczony jest limit
+## Uruchomienie na GitHub Pages
+1. Na koncie **motywacjakornaszka-svg** utwórz nowe repozytorium, np. `nawyki-talerz`, z widocznością **Public**.
+2. Wgraj **wszystkie pliki z tego folderu** do głównego folderu repozytorium, bez podfolderu.
+3. Wejdź w Settings → Pages → Source: „Deploy from a branch”, wybierz gałąź `main`, folder `/ (root)` i kliknij Save.
+4. Po 1–2 minutach aplikacja będzie pod adresem `https://motywacjakornaszka-svg.github.io/nawyki-talerz/`. Otwórz go w Chrome na telefonie i zainstaluj (⋮ → Zainstaluj aplikację).
 
-| Krok | Wzór |
-|---|---|
-| Przemiana podstawowa (BMR) | Mifflin-St Jeor: `10 × waga + 6,25 × wzrost − 5 × wiek + 5` (M) / `− 161` (K) |
-| Dzień bez kroków | `BMR × 1,2` (praca siedząca) / `1,3` (stojąca) / `1,4` (fizyczna) |
-| Kalorie z kroków | `kroki × (0,415 × wzrost) = km`, potem `0,5 kcal × waga × km` |
-| Trening | kcal wpisane ręcznie |
-| Deficyt | `tempo (kg/tydz.) × 7700 / 7` |
-| **Limit** | `wydatek − deficyt` |
+## Twoje dane przejdą same
+Przeglądarka przechowuje dane osobno dla każdego adresu bazowego. Adres bazowy to tu `motywacjakornaszka-svg.github.io`, a nie folder repozytorium. Stare aplikacje i nowa mają ten sam adres bazowy, więc nowa aplikacja **od razu widzi** Twoje nawyki, pamiętnik, zdjęcia, posiłki, wagę i klucze AI. Nie trzeba niczego przenosić.
 
-Zabezpieczenia:
-- limit nie spada poniżej 1500 kcal (M) i 1200 kcal (K);
-- tempo chudnięcia jest ograniczone do ok. 1% masy ciała tygodniowo;
-- przy BMI < 18,5 aplikacja nie liczy deficytu.
+Warunek: używasz **tej samej przeglądarki na tym samym telefonie**. Dla bezpieczeństwa przed pierwszym uruchomieniem zrób kopie w starych aplikacjach (Nawyki: Raport → 💾 Kopia JSON, Talerz: Profil → Eksportuj dane).
 
-> Szacunki są przybliżone. Ocena kalorii ze zdjęcia może się mylić o 20–30%. Jeśli chorujesz lub przyjmujesz leki, skonsultuj dietę z lekarzem lub dietetykiem.
+Po przejściu korzystaj już tylko z nowej aplikacji. Stare możesz zostawić na jakiś czas jako zapas, bo pracują na tych samych danych.
 
----
+## Aktualizacje
+Po zmianie plików podbij `VERSION` w `sw.js` (np. `nawyki-talerz-v4.2-2`). Zamknij aplikację i otwórz ją ponownie.
 
-## Struktura repozytorium
+## Pliki
+- `index.html`, `app.js`, `data.js`, `style.css`: Nawyki (aplikacja główna);
+- `talerz.html`: Jedzenie (Talerz), wyświetlane w zakładce;
+- `sw.js`: działanie offline;
+- `manifest.webmanifest`: instalacja i skróty z ikony (Dodaj posiłek / Dodaj wodę);
+- ikony.
 
-```
-index.html              ← cała aplikacja
-manifest.webmanifest    ← dane do instalacji na telefonie
-sw.js                   ← działanie offline
-icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png, favicon.svg  ← ikony
-screenshot-dzis.png, screenshot-plyny.png                                            ← zrzuty do okna instalacji
-README.md, .gitignore, .nojekyll
-```
-Wszystkie pliki leżą w jednym folderze, bez podfolderów. **Bez plików ikon Chrome nie pozwoli zainstalować aplikacji.**
-
-Nie trzeba niczego budować ani instalować (bez npm i bez frameworków).
-
----
-
-## 1. Wrzucenie na GitHub
-
-**Przez przeglądarkę (najprościej):**
-1. Na github.com kliknij **New repository**. Nazwa np. `talerz`, widoczność **Public**, bez README.
-2. Kliknij **uploading an existing file** i przeciągnij **wszystkie pliki z paczki**, także pliki `.png` i `.svg`.
-3. Kliknij **Commit changes**.
-
-**Albo z terminala:**
-```bash
-cd talerz
-git init
-git add .
-git commit -m "Talerz – pierwsza wersja"
-git branch -M main
-git remote add origin https://github.com/TWOJ_LOGIN/talerz.git
-git push -u origin main
-```
-
-## 2. Włączenie GitHub Pages (darmowy hosting)
-
-1. W repozytorium wejdź w **Settings → Pages**.
-2. W **Source** wybierz **Deploy from a branch**, branch **main**, folder **/ (root)**, a potem **Save**.
-3. Po 1–2 minutach aplikacja będzie pod adresem:
-   `https://TWOJ_LOGIN.github.io/talerz/`
-
-> **Prywatność:** publiczne repozytorium pokazuje tylko **kod** aplikacji. Twoje posiłki, waga i klucze API nigdy nie trafiają do repozytorium, bo są zapisywane wyłącznie w pamięci przeglądarki na telefonie. GitHub Pages z prywatnego repozytorium wymaga płatnego planu (GitHub Pro).
-
-## 3. Instalacja na telefonie
-
-**Android (Chrome):**
-1. Otwórz adres aplikacji **w Chrome**. Wpisz go ręcznie albo kliknij **„Otwórz w Chrome”** w aplikacji (Profil → 📲). Link otwarty w Messengerze, Gmailu czy aplikacji Google działa w ich wbudowanej przeglądarce, która pozwala dodać tylko skrót.
-2. Poczekaj kilka sekund. Na ekranie „Dziś” pojawi się pasek **📲 Zainstaluj Talerz jako aplikację**, a w Profilu przycisk **Zainstaluj aplikację**.
-3. Albo ręcznie: menu **⋮** → **Zainstaluj aplikację**, a w starszych wersjach **Dodaj do ekranu głównego** → w okienku wybierz **Zainstaluj**, nie „Utwórz skrót”.
-4. Po instalacji Talerz jest na liście aplikacji. Przytrzymaj ikonę, żeby zobaczyć skróty **Dodaj posiłek** i **Dodaj wodę**.
-
-Jeśli wcześniej dodałeś skrót, usuń go z ekranu głównego, a potem zainstaluj według kroków powyżej.
-
-**Prawdziwy plik APK (opcjonalnie):** na https://www.pwabuilder.com wklej adres aplikacji → **Package for stores** → **Android** → pobierz paczkę i zainstaluj plik `.apk` z telefonu (trzeba zezwolić na instalację z nieznanych źródeł). Żeby zniknął pasek adresu, wgraj do repozytorium plik `.well-known/assetlinks.json` z paczki PWABuilder (plik `.nojekyll` w repozytorium sprawia, że GitHub Pages udostępni ten folder).
-
-**iPhone (Safari):** otwórz adres aplikacji, potem **Udostępnij** i **Do ekranu początkowego**.
-
-Aplikacja uruchamia się wtedy jak zwykła apka: na pełnym ekranie, z ikoną i z działaniem offline (bez analizy zdjęć, bo ta wymaga internetu).
-
-## 4. Klucz AI (zakładka „AI” w aplikacji)
-
-| Dostawca | Gdzie wziąć klucz | Koszt |
-|---|---|---|
-| **Google Gemini** | https://aistudio.google.com/app/apikey | darmowy limit na wybranych modelach |
-| **Claude (Anthropic)** | https://platform.claude.com/settings/keys | płatne za użycie (kredyty w Claude Console); subskrypcja claude.ai nie obejmuje API |
-
-W zakładce AI wklej klucz i kliknij **＋ Dodaj klucz**. Aplikacja od razu go przetestuje. Potem kliknij **Pobierz listę** i wybierz model.
-
-### Kilka kluczy i automatyczne przełączanie
-
-- Dla każdego dostawcy możesz dodać **dowolnie wiele kluczy**, z nazwą, np. „Prywatny” albo „Płatny”. Kolejność zmienisz strzałką ▲.
-- Klucze są używane **po kolei**. Gdy klucz zwróci błąd limitu (429) albo braku środków, aplikacja od razu ponawia analizę **następnym kluczem**. Wyczerpany klucz odpoczywa:
-  - przy limicie minutowym: tyle, ile każe serwer (zwykle kilkadziesiąt sekund);
-  - przy dziennym limicie Gemini: do północy czasu pacyficznego, czyli ok. 9:00 w Polsce;
-  - przy braku środków w Claude: 1 godzinę.
-- Nieprawidłowy klucz jest pomijany, dopóki go nie przetestujesz (⟳) albo nie usuniesz.
-- Opcja **„Przełącz na drugiego dostawcę”**: gdy wyczerpią się wszystkie klucze Gemini, aplikacja użyje kluczy Claude (i odwrotnie).
-- Przy każdym kluczu widać jego stan (● działa / ⏸ limit do godz. … / ✗ nieprawidłowy) i liczbę dzisiejszych użyć.
-
-**AI nie odpowiada?** W Profilu kliknij **🩺 Sprawdź AI**. Aplikacja przetestuje każdy klucz i pokaże czas odpowiedzi albo dokładny błąd. Ostatnie zapytania i błędy znajdziesz w **📋 Dziennik AI**.
-
-> Regulaminy dostawców mogą zabraniać obchodzenia limitów, np. przez zakładanie wielu darmowych projektów tylko w tym celu. Bezpiecznie jest łączyć np. darmowy klucz z płatnym albo klucze różnych dostawców.
-
-> ⚠️ **Nigdy nie wpisuj klucza do kodu ani nie commituj go do repozytorium.** Aplikacja wywołuje API bezpośrednio z telefonu, więc klucz jest bezpieczny tylko na Twoim urządzeniu. Dla Claude ustaw w Console miesięczny limit wydatków.
-
----
-
-## Funkcje (wersja 9)
-
-Aplikacja ma 3 zakładki: **Dziś · Historia · Profil**. Profil i ustawienia zapisują się same, bez przycisku „Zapisz”.
-
-**Dziś**
-- 🎯 limit kalorii, makro, 👟 kroki i 🏋️ trening w jednej karcie (ⓘ pokazuje, jak liczony jest limit);
-- pasek jakości dnia:
-  - 🥦 warzywa i owoce (cel 400 g);
-  - 🍬 cukry wolne (max 30 g);
-  - 💧 odsetek dobrych napojów;
-- 💧 płyny:
-  - wybór napoju (12 rodzajów + własne, kolorowa kropka = ocena) i ilości;
-  - pasek tempa na osi dnia;
-  - pasek składu napojów;
-  - zamiennik po słodkim napoju, np. „−139 kcal, −35 g cukru”;
-- ➕ dodawanie posiłku na 3 sposoby: **📷 zdjęcie**, **🎤 powiedz** (np. „dwa jajka i kromka chleba”) albo wpisz opis; Rozpoznawanie mowy działa w Chrome, Edge i Safari; w innych przeglądarkach użyj mikrofonu na klawiaturze.
-- ⚡ szybsza analiza: mniejsze zdjęcie i minimalne „myślenie” modelu. Aplikacja czeka na odpowiedź do 60 s przy zdjęciu i do 45 s przy opisie, potem próbuje modelu zapasowego albo następnego klucza. Po 20 s pojawia się skrót „🎤 Powiedz / ✍️ Ręcznie”;
-- 🍽️ posiłki z oceną (🟢 → 🔴) i podpowiedzią zamiennika przy słabych wyborach; kalorie ze słodkich napojów dochodzą tu automatycznie;
-- 🔥 seria dni, tydzień, postęp do celu wagi, wskazówka dnia, odznaki.
-
-**Ranking napojów:**
-- 🟢 woda (zwykła i gazowana);
-- 🟢 herbata i kawa bez cukru;
-- 🟡 mleko, kefir, napój roślinny;
-- 🟡 sok 100% do 150 ml dziennie (powyżej 🔴);
-- 🟠 napoje zero;
-- 🔴 cola i inne słodzone napoje, nektary, energetyki, alkohol (alkohol nie liczy się do nawodnienia).
-
-**Ranking jedzenia** (kategorie nadaje AI albo wybierasz ręcznie):
-- 🥦🍎🫘 najlepsze;
-- 🌾🍗🧀🥜 dobre;
-- 🍞 z umiarem;
-- 🍟 ograniczaj;
-- 🍩 odradzane.
-
-Ocena posiłku to średnia ważona kaloriami składników. Gdy posiłek ma ponad 15 g cukrów wolnych, ocena spada do „ograniczaj”.
-
-**Historia:** wykresy z 14 dni: kalorie, warzywa i owoce, cukry wolne, płyny, waga.
-
-**Profil:** dane, nawodnienie (🔔 powiadomienia, 📅 przypomnienia w kalendarzu), 📸 klucze AI, 🎨 wygląd, 📲 instalacja, 💾 kopia danych.
-
-**AI bez ustawień technicznych:**
-- model jest wybierany automatycznie: najnowszy stabilny **Gemini Flash-Lite** (szybki, większy darmowy limit), a jako zapasowy zwykły Gemini Flash; dla Claude – Haiku. Limity Google są liczone osobno dla każdego modelu, więc gdy jeden model wyczerpie limit, aplikacja przechodzi na drugi z tym samym kluczem. Gdy dostawca wycofa model, aplikacja sama przełączy się na nowy;
-- najpierw używane są klucze Gemini, potem Claude. Po wyczerpaniu limitu aplikacja przechodzi do następnego klucza;
-- analiza startuje od razu po zrobieniu zdjęcia (zdjęcie zmniejszone do 768 px, krótkie „myślenie” modelu).
-
-**Wygląd:** 9 gotowych zestawów, tryb jasny/ciemny/auto, a w „Kolory i tła” 7 palet, 10 teł i wyciszenie tła.
-
-## Gdzie są zdjęcia posiłków
-
-- **Na telefonie** aplikacja zapisuje tylko **małą miniaturę** (160 px) przy posiłku, w pamięci przeglądarki/aplikacji. Pełnego zdjęcia aplikacja nie przechowuje.
-- **Do analizy** zmniejszona kopia zdjęcia jest wysyłana do Google (Gemini) albo Anthropic (Claude) i obowiązują tam ich zasady przechowywania danych. W darmowym planie Gemini Google może używać przesłanych danych do ulepszania usług.
-- **Galeria:** zdjęcie zrobione aparatem z poziomu aplikacji zwykle nie trafia do galerii telefonu. Zdjęcie wybrane z galerii zostaje tam, gdzie było.
-- **GitHub:** żadne zdjęcia ani dane nie trafiają do repozytorium.
-
-## Aktualizacja aplikacji
-
-Wersję aplikacji widać na dole zakładki **Profil** („Talerz, wersja …”).
-
-**Nie widać zmian po wgraniu nowej wersji?**
-1. Sprawdź na github.com, czy `index.html` jest w **głównym folderze** repozytorium, a nie w podfolderze `talerz/`, i czy pliki zostały podmienione (data ostatniego commita).
-2. W **Settings → Pages** poczekaj, aż wdrożenie będzie zielone (1–2 min, zakładka **Actions**).
-3. Zamknij aplikację całkowicie i otwórz ją ponownie, **dwa razy**. Od wersji 4 kolejne aktualizacje pokazują się już przy pierwszym otwarciu.
-4. Jeśli nadal widać starą wersję: Android/Chrome → ⋮ → Ustawienia → Ustawienia witryn → wyczyść dane strony. iPhone → Ustawienia → Safari → Zaawansowane → Dane witryn → usuń dane strony. Wcześniej zrób **eksport kopii**, bo usunięcie danych strony kasuje zapisane posiłki.
-
-
-Po zmianie plików podbij `VERSION` w `sw.js` (np. z `talerz-v3` na `talerz-v4`). Dzięki temu telefony pobiorą nową wersję. Zwykle wystarczy potem zamknąć i ponownie otworzyć aplikację.
-
-## Kopia zapasowa
-
-**Profil → Eksportuj dane** zapisuje plik `.json` z profilem i historią. Ten sam plik wczytasz przez **Importuj z pliku**, np. na nowym telefonie. Klucze API nie są zapisywane w kopii.
-
-## Pomysły na rozwój
-
-- Automatyczne kroki z Apple Health / Health Connect wymagają natywnej aplikacji (np. Capacitor z wtyczką do Health Connect / HealthKit).
-- Skaner kodów kreskowych z bazą Open Food Facts.
-- Własny mały serwer (np. Cloudflare Worker), żeby nie trzymać klucza API na telefonie.
+Klucze API zostają tylko na telefonie i nie trafiają do repozytorium ani do kopii. **Nigdy nie wpisuj klucza do plików.**
