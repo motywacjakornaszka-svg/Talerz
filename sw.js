@@ -1,6 +1,6 @@
 // Service worker aplikacji „Nawyki i Talerz”: działanie offline. Zapytania do API AI zawsze idą prosto do sieci.
 // Po każdej zmianie plików podbij numer wersji, żeby telefony pobrały nową wersję.
-const VERSION = 'nawyki-talerz-v4.2-1';
+const VERSION = 'nawyki-talerz-v4.5-1';
 const PREFIX = 'nawyki-talerz-';
 const SHELL = ['./', './index.html', './style.css', './data.js', './app.js', './talerz.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './favicon.svg'];
 
@@ -21,6 +21,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
+  // sprawdzanie wersji (fragment pliku) – zawsze prosto z sieci, bez zapisywania
+  if (e.request.headers.has('range')) return;
   // czcionki Google (Jedzenie): z sieci, kopia na offline
   if (url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com')) {
     e.respondWith(caches.open(VERSION).then(c => fetch(e.request).then(r => { c.put(e.request, r.clone()); return r; }).catch(() => c.match(e.request))));

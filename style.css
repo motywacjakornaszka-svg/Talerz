@@ -204,3 +204,38 @@ button.tag:disabled{opacity:.5;cursor:default}
 .aday[open] summary{margin-bottom:8px}
 .aday .chx{margin-bottom:10px}
 body.mton .fab{display:none}
+/* ---------- 4.3: diagnostyka kluczy ---------- */
+.dgs{display:flex;flex-direction:column;gap:3px;margin-top:10px;font-size:13px;color:var(--mut)}
+.dgh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.dgv{margin-top:10px;font-weight:700;font-size:15px}
+.dgv small{font-weight:400;color:var(--mut);font-size:12px}
+.dgv.bad{color:var(--red)}.dgv.warn{color:var(--warn)}.dgv.ok{color:var(--ac)}
+.dgst{margin-top:6px;display:flex;flex-direction:column;gap:5px}
+.dgst>div{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.4}
+.dgst>div>i{font-style:normal;flex:none;width:20px;text-align:center}
+.dgst span{word-break:break-word}
+.dgfix{margin-top:10px;padding:9px 11px;border-radius:10px;background:var(--warn2);font-size:13px;line-height:1.45}
+.dgfix a{color:var(--ac);font-weight:600}
+.dgl{display:flex;gap:8px;font-size:12px;padding:6px 0;border-top:1px solid var(--bd)}
+.dgl>span:first-child{flex:none;color:var(--mut);width:84px}
+.dgl small{display:block;color:var(--mut);margin-top:2px;word-break:break-word}
+/* ---------- 4.4: baner aktualizacji ---------- */
+#updbar{position:fixed;left:12px;right:12px;bottom:calc(var(--nav) + 12px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--card);border:1px solid var(--ac);border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:14px}
+/* ---------- 4.5: rozciąganie i rysunki ćwiczeń ---------- */
+svg.art{display:block;width:100%;height:auto}
+.artbox{max-width:270px;margin:10px auto 4px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px}
+svg.art.sm,.art.sm{width:104px;flex:none;border:1px solid var(--bd);border-radius:10px;background:var(--card)}
+.art.sm.noart{height:66px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.ed svg.art.sm{float:right;margin:0 0 6px 8px}
+.ed::after{content:"";display:block;clear:both}
+.str .sth{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.strl{margin-top:8px;border-top:1px solid var(--bd);padding-top:8px}
+.strl summary{cursor:pointer;font-weight:600;font-size:14px}
+.sti{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--bd)}
+.sti:last-child{border-bottom:0}
+.sti b{display:block;font-size:14px}
+.sti small{display:block;color:var(--mut);font-size:12px;margin:2px 0 4px}
+.sti .sec.sm{margin-top:6px}
+.side{text-align:center;font-size:14px;color:var(--mut);margin:4px 0}
+.side.on{color:var(--ac);font-weight:700}

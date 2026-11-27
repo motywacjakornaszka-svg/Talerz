@@ -1,4 +1,4 @@
-# Nawyki i Talerz 4.2
+# Nawyki i Talerz 4.5
 
 Elastyczne nawyki (Mini / Plus / Elita, pamiętnik, cele, projekty, mentor AI) i Talerz (licznik kalorii ze zdjęć, płyny, kroki, waga) w jednej aplikacji.
 
@@ -15,6 +15,41 @@ Elastyczne nawyki (Mini / Plus / Elita, pamiętnik, cele, projekty, mentor AI) i
 - **Postęp**: karta „Jedzenie – ostatnie 7 dni” (dni w limicie, cel płynów, warzywa, kroki, zmiana wagi).
 - **Wspólne klucze AI** (Gemini i Claude): klucz dodany w jednym miejscu działa w obu częściach.
 - **Kopia zapasowa** (Więcej → Kopie i dane) zawiera także dane Jedzenia.
+
+## Nowości w 4.5: rozciąganie w Rozruchu
+- **🧘 Rozciąganie** to nowy kafelek w Więcej → Rozruch. Zestaw ma 10 ćwiczeń (ok. 9 min) na:
+  - biodra: wykrok w klęku, czwórka na plecach;
+  - kręgosłup: koci grzbiet – krowa, skręt w leżeniu;
+  - tylną taśmę: tył uda z ręcznikiem, swobodny zwis w skłonie;
+  - klatkę i powięź piersiową: otwarcie w drzwiach, leżenie na zwiniętym ręczniku;
+  - ramiona: ramię przed klatką, triceps za głową.
+- **Każde ćwiczenie ma rysunek** z zaznaczonym rozciąganym miejscem i kierunkiem ruchu, opis „jak wykonać” i łatwiejszą wersję (przycisk „Łatwiej”).
+- **Ćwiczenia „na obie strony”** dają w połowie czasu sygnał dźwiękowy i wibrację: „↔️ Zmień stronę”.
+- **📚 Katalog 11 dodatkowych ćwiczeń**, dodawanych jednym dotknięciem: pozycja dziecka, motyl, łydka przy ścianie, przód uda, sfinks, skłon w bok, nawlekanie igły, anioły przy ścianie, głęboki przysiad, szyja, nadgarstki.
+- **W edycji Rozruchu** każde ćwiczenie (także Twoje z fazy siedzącej i stojącej) może dostać rysunek i znacznik „obie strony”. Możesz też wybrać, który nawyk zalicza rozciąganie.
+- Twoje ćwiczenia i ich zmiany (nazwy, opisy, czasy, kolejność, uwagi, rysunki) są w kopii zapasowej i wracają po jej wczytaniu.
+
+## Nowości w 4.4: aktualizacje same się wczytują
+- Aplikacja sprawdza, czy jest nowa wersja, przy starcie, przy każdym powrocie do niej i co 30 minut. Gdy ją znajdzie, przeładowuje się sama i pokazuje „✨ Zaktualizowano do wersji …”.
+- Gdy akurat coś piszesz albo mentor odpowiada, aplikacja się nie przeładowuje. Pokazuje baner „Nowa wersja jest gotowa – Odśwież”.
+- Więcej → stopka „🔄 Sprawdź aktualizację” i Kopie i dane → „🧹 Wczytaj od nowa”. Ten drugi przycisk usuwa tylko zapamiętane pliki programu, dane zostają.
+- Nową wersję rozpoznaje numer `VER` na początku `app.js`. Przy każdej zmianie podbij go, a dla porządku także `VERSION` w `sw.js`.
+
+## Poprawki w 4.3.1
+- Kopia zapasowa nie zawiera żadnych kluczy API. Lista kluczy usuniętych w Ustawieniach zapisuje teraz tylko ich skrót, z którego nie da się odtworzyć klucza. Wcześniej zapisywała pełne klucze.
+- Usunięty klucz nie wraca już po ponownym uruchomieniu z Jedzenia.
+
+## Nowości w 4.3: diagnostyka kluczy AI
+- **🔧 Diagnostyka AI** (Więcej → Diagnostyka AI albo Ustawienia → „Test i diagnostyka kluczy”) sprawdza każdy klucz z obu części, Mentora i Jedzenia, krok po kroku:
+  - format klucza;
+  - połączenie i to, czy dostawca przyjmuje klucz;
+  - prawdziwą odpowiedź modelu (który model odpowiedział i jak szybko);
+  - obsługę zdjęć i nagrań.
+- Każdy problem ma wyjaśnienie po polsku i podpowiedź „Co zrobić”. Rozpoznawane problemy to m.in.: zły lub usunięty klucz, wyczerpany limit dzienny lub chwilowy (dla Gemini z godziną odnowienia), brak środków, przeciążone serwery, blokada regionu lub VPN, ograniczenia klucza i brak internetu.
+- Udany test zapamiętuje działający model i odblokowuje w Jedzeniu klucz błędnie oznaczony jako nieprawidłowy.
+- **📋 Ostatnie zapytania AI**: wspólny dziennik Mentora i Jedzenia (czas, dostawca, model, błąd).
+- **📋 Kopiuj raport** kopiuje wyniki bez pełnych kluczy, do wklejenia w wiadomości z prośbą o pomoc.
+- Gdy mentor nie odpowie, przy „Ponów” jest też przycisk „🔧 Sprawdź klucze”.
 
 ## Nowości w 4.2: zakładka Mentor
 - **Wszystkie rozmowy z AI są w zakładce Mentor.** Pozostałe zakładki pokazują same fakty. Przyciski „🧭 Omów z mentorem” (pamiętnik), „🧭 Co zjeść jutro?” (wieczorny bilans) i „🧭 Zapisz i zapytaj mentora o zdjęcie” (wpis) przenoszą do Mentora i tam zadają pytanie. Wcześniejsze odpowiedzi AI z pamiętnika są w archiwum rozmów.
@@ -51,7 +86,7 @@ Warunek: używasz **tej samej przeglądarki na tym samym telefonie**. Dla bezpie
 Po przejściu korzystaj już tylko z nowej aplikacji. Stare możesz zostawić na jakiś czas jako zapas, bo pracują na tych samych danych.
 
 ## Aktualizacje
-Po zmianie plików podbij `VERSION` w `sw.js` (np. `nawyki-talerz-v4.2-2`). Zamknij aplikację i otwórz ją ponownie.
+Po wgraniu nowych plików aplikacja zaktualizuje się sama przy najbliższym otwarciu (od wersji 4.4). Przy zmianach w plikach podbij `VER` w `app.js` i `VERSION` w `sw.js`. Przejście z wersji starszej niż 4.4 wymaga jednego ręcznego zamknięcia i otwarcia aplikacji.
 
 ## Pliki
 - `index.html`, `app.js`, `data.js`, `style.css`: Nawyki (aplikacja główna);
@@ -60,4 +95,4 @@ Po zmianie plików podbij `VERSION` w `sw.js` (np. `nawyki-talerz-v4.2-2`). Zamk
 - `manifest.webmanifest`: instalacja i skróty z ikony (Dodaj posiłek / Dodaj wodę);
 - ikony.
 
-Klucze API zostają tylko na telefonie i nie trafiają do repozytorium ani do kopii. **Nigdy nie wpisuj klucza do plików.**
+Klucze API zostają tylko na telefonie. Nie trafiają do repozytorium ani do kopii zapasowej. Po przeniesieniu na nowy telefon wklej klucz ponownie: jeden klucz Gemini wystarczy dla obu części. **Nigdy nie wpisuj klucza do plików.**
